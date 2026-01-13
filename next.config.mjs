@@ -9,7 +9,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  turbopack: {},
   serverExternalPackages: ["@prisma/client"],
   webpack: (config, { isServer }) => {
     if (isServer) {
