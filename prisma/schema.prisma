@@ -1,0 +1,576 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                     String    @id @default(cuid())
+  name                   String
+  email                  String    @unique
+  phone                  String
+  profession             String
+  password               String
+  googleAccessToken      String?
+  googleEmail            String?
+  googleRefreshToken     String?
+  resetPasswordToken     String?
+  resetPasswordExpiry    DateTime?
+}
+
+model Company {
+  id      String @id @default(cuid())
+  name    String
+  cnpj    String
+  phone   String
+  address String
+}
+
+model Team {
+  id                     String            @id @default(cuid())
+  name                   String
+  email                  String            @unique
+  position               String
+  password               String?
+  teamId                 String?
+  googleAccessToken      String?           @db.Text
+  googleEmail            String?
+  googleRefreshToken     String?           @db.Text
+  directorId             String?
+  avatarUrl              String?
+  cpf                    String?            @default("")   
+  phone                  String?            @default("")   
+  birthDate              String?           
+  cnpj                   String?           
+  address                String?         
+  accessStatus           String?            @default("pending") // 'pending' | 'approved' | 'rejected'
+  requestedAt            DateTime?          @default(now())
+  approvedAt             DateTime?
+  createdAt              DateTime?          @default(now())
+  resetPasswordToken     String?
+  resetPasswordExpiry    DateTime?
+  updatedAt              DateTime?          @updatedAt
+  
+  // 🏢 Dados da Empresa
+  companyName            String?
+  companyCnpj            String?
+  companyPhone           String?
+  companyEmail           String?
+  companyAddress         String?
+  companyWebsite         String?
+  companyDescription     String?
+  companyLogo            String?
+  companySize            String?            // 'micro' | 'pequena' | 'media' | 'grande'
+  companySector          String?            // 'tecnologia' | 'financeiro' | 'saude' | 'educacao' | 'outros'
+  companyFounded         String?            // Ano de fundação
+  companyRevenue         String?            // Faturamento anual
+  companyEmployees       String?            // Número de funcionários
+  campaigns          Campaing[]
+  leads              Lead[]            @relation("LeadCreator")
+  meetings           Meeting[]
+  proposals          Proposal[]        @relation("ProposalCreator")
+  QuickReply         QuickReply[]
+  segments           Segment[]
+  team               TeamGroup?        @relation("TeamMember", fields: [teamId], references: [id])
+  managedTeams       TeamGroup[]       @relation("TeamManager")
+  permissions        TeamPermission[]
+  templates          Template[]
+  whatsappSessions   WhatsAppSession[]
+  aiConfig           AIConfig?
+
+
+  @@index([teamId], map: "Team_teamId_fkey")
+  @@index([directorId], map: "Team_directorId_fkey")
+}
+
+model TeamGroup {
+  id        String   @id @default(cuid())
+  name      String
+  managerId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  members   Team[]   @relation("TeamMember")
+  manager   Team     @relation("TeamManager", fields: [managerId], references: [id])
+
+  @@index([managerId], map: "TeamGroup_managerId_fkey")
+}
+
+model TeamPermission {
+  id            String  @id @default(cuid())
+  teamId        String
+  role          String
+  dashboard     Boolean @default(false)
+  whatsapp      Boolean @default(false)
+  propostas     Boolean @default(false)
+  simuladores   Boolean @default(false)
+  relatorios    Boolean @default(false)
+  campanhas     Boolean @default(false)
+  equipe        Boolean @default(false)
+  configuracoes Boolean @default(false)
+  team          Team    @relation(fields: [teamId], references: [id])
+
+  @@index([teamId], map: "TeamPermission_teamId_fkey")
+}
+
+model Lead {
+  id             String       @id @default(cuid())
+  name           String
+  email          String?      
+  phone          String
+  ocupation      String
+  potentialValue String
+  observations   String
+  status         String       @default("novos_leads")
+  product        String?
+  createdAt      DateTime     @default(now())
+  createdBy      String?
+  updatedAt      DateTime?    @updatedAt
+  deletedAt      DateTime?
+  followups      Followup[]
+  creator        Team?        @relation("LeadCreator", fields: [createdBy], references: [id])
+  proposals      Proposal[]
+  simulations    Simulation[]
+  meetings       Meeting[]
+
+  @@index([createdBy])
+  files LeadFile[]
+}
+
+model Proposal {
+  id                  String         @id @default(cuid())
+  title               String
+  client              String
+  company             String
+  value               String
+  stage               String         @default("pendente_envio")
+  priority            String         @default("medium")
+  dueDate             String?
+  description         String?
+  phone               String
+  email               String
+  leadId              String
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime?      @updatedAt
+  arquivoUrl          String?
+  createdBy           String?
+  acrescentarSeguro   Boolean?
+  creditoUnitario     Float?
+  mesContemplacao     Int?
+  opcaoParcela        String?
+  parcelaContemplacao Float?
+  prazoConsorcio      Int?
+  taxa                Float?
+  imoveis             Property[]
+  proponentes         Proponent[]
+  creator             Team?          @relation("ProposalCreator", fields: [createdBy], references: [id])
+  lead                Lead           @relation(fields: [leadId], references: [id])
+  arquivos            ProposalFile[]
+  simulacoes          Simulation[]
+
+  @@index([leadId], map: "Proposal_leadId_fkey")
+  @@index([createdBy])
+}
+
+model Proponent {
+  id          String   @id @default(cuid())
+  name        String
+  cpf         String
+  email       String
+  phone       String
+  razaoSocial String?
+  nomeEmpresa String?
+  dataNascimento String?
+  ocupacao    String?
+  // 🏠 Dados habitacionais
+  endereco    String?
+  bairro      String?
+  cep         String?
+  cidadeUf    String?
+  rendaMensal String?
+  cnpj        String?
+  proposalId  String
+  
+  proposal    Proposal @relation(fields: [proposalId], references: [id])
+
+  @@index([proposalId], map: "Proponent_proposalId_fkey")
+}
+
+
+model Property {
+  id           String          @id @default(cuid())
+  address      String
+  neighborhood String?
+  type         String?
+  zipCode      String?
+  value        String
+  creditValue  String?
+  description  String?
+  proposalId   String
+  proposal     Proposal        @relation(fields: [proposalId], references: [id])
+  owners       PropertyOwner[] // continua sendo lista, mas pode estar vazia
+
+  @@index([proposalId], map: "Property_proposalId_fkey")
+}
+
+model PropertyOwner {
+  id         String    @id @default(cuid())
+  name       String
+  propertyId String?   // agora opcional
+  property   Property? @relation(fields: [propertyId], references: [id])
+
+  @@index([propertyId])
+}
+
+model ProposalFile {
+  id           String   @id @default(cuid())
+  url          String?  @db.Text
+  name         String
+  proposalId   String
+  createdAt    DateTime @default(now())
+  documentType String?
+  fileData     Bytes?
+  mimeType     String?
+  originalName String?
+  size         Int?
+  proposal     Proposal @relation(fields: [proposalId], references: [id])
+
+  @@index([proposalId], map: "ProposalFile_proposalId_fkey")
+}
+
+model Meeting {
+  id             String   @id @default(cuid())
+  title          String
+  description    String?
+  startDateTime  DateTime
+  endDateTime    DateTime
+  duration       Int      @default(60)
+  type           String   @default("meet")
+  status         String   @default("confirmed")
+  meetLink       String?
+  attendees      String?
+  organizerEmail String
+  googleEventId  String?
+  leadId         String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  organizer      Team     @relation(fields: [organizerEmail], references: [email])
+  lead           Lead?    @relation(fields: [leadId], references: [id])
+
+  @@index([organizerEmail])
+  @@index([startDateTime])
+  @@index([googleEventId])
+  @@index([leadId])
+}
+
+model Followup {
+  id              String   @id @default(cuid())
+  observations    String
+  tipeOfContact   String
+  date            DateTime
+  dateNextContact DateTime
+  leadId          String
+  lead            Lead     @relation(fields: [leadId], references: [id])
+
+  @@index([leadId], map: "Followup_leadId_fkey")
+}
+
+model Simulation {
+  id                  String    @id @default(cuid())
+  creditoUnitario     Float
+  taxa                Float
+  prazoConsorcio      Int
+  opcaoParcela        String
+  parcelaContemplacao Float?
+  mesContemplacao     Int?
+  acrescentarSeguro   Boolean
+  createdAt           DateTime  @default(now())
+  proposalId          String?
+  leadId              String?
+  lead                Lead?     @relation(fields: [leadId], references: [id])
+  proposal            Proposal? @relation(fields: [proposalId], references: [id])
+
+  @@index([proposalId], map: "Simulation_proposalId_fkey")
+  @@index([leadId], map: "Simulation_leadId_fkey")
+}
+
+model Chat {
+  id          String  @id
+  idfromWpp   String  @db.Text
+  body        String? @db.Text
+  timestamp   String?
+  notifyName  String?
+  from        String?
+  to          String?
+  contactName String?
+  foto        String?
+  mediaUrl    String?
+}
+
+model WhatsAppSession {
+  id               String            @id @default(uuid())
+  sessionName      String            @unique
+  isActive         Boolean           @default(true)
+  connectionStatus String            @default("DISCONNECTED")
+  qrCode           String?           @db.Text
+  lastConnected    DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  formattedNumber  String?
+  phoneNumber      String?
+  userId           String?
+  deletedAt        DateTime?
+  contacts         WhatsAppContact[]
+  messages         WhatsAppMessage[]
+  user             Team?             @relation(fields: [userId], references: [id])
+
+  @@index([sessionName])
+  @@index([isActive])
+  @@index([userId])
+}
+
+model WhatsAppContact {
+  id               String               @id @default(uuid())
+  phone            String
+  formattedPhone   String
+  name             String?
+  profilePic       String?              @db.Text
+  isGroup          Boolean              @default(false)
+  sessionId        String
+  assignedToUserId Int?
+  assignedAt       DateTime?
+  lastMessageAt    DateTime?
+  archived         Boolean              @default(false)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  session          WhatsAppSession      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  tags             WhatsAppContactTag[]
+  messages         WhatsAppMessage[]
+
+  @@unique([phone, sessionId])
+  @@index([phone])
+  @@index([sessionId])
+  @@index([assignedToUserId])
+  @@index([lastMessageAt])
+}
+
+model WhatsAppMessage {
+  id           String           @id @default(uuid())
+  messageId    String           @unique
+  chatId       String
+  sessionId    String
+  contactId    String?
+  contactPhone String?
+  fromMe       Boolean
+  timestamp    DateTime
+  type         String           @default("text")
+  body         String?          @db.Text
+  quotedMsgId  String?
+  mediaUrl     String?          @db.LongText
+  mediaType    String?
+  fileName     String?
+  caption      String?          @db.Text
+  isForwarded  Boolean          @default(false)
+  isStatus     Boolean          @default(false)
+  isGroupMsg   Boolean          @default(false)
+  author       String?
+  archived     Boolean          @default(false)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  contact      WhatsAppContact? @relation(fields: [contactId], references: [id])
+  session      WhatsAppSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@index([chatId])
+  @@index([sessionId])
+  @@index([contactId])
+  @@index([contactPhone])
+  @@index([timestamp])
+  @@index([fromMe])
+}
+
+model WhatsAppTag {
+  id        String               @id @default(uuid())
+  name      String               @unique
+  color     String               @default("#007bff")
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+  contacts  WhatsAppContactTag[]
+
+  @@index([name])
+}
+
+model WhatsAppContactTag {
+  id        String          @id @default(uuid())
+  contactId String
+  tagId     String
+  createdAt DateTime        @default(now())
+  contact   WhatsAppContact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  tag       WhatsAppTag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([contactId, tagId])
+  @@index([contactId])
+  @@index([tagId])
+}
+
+model Campaing {
+  id           String             @id @default(uuid())
+  name         String
+  delay        Int                @default(30000)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  contactDelay Int                @default(10000)
+  userId       String?
+  status       String             @default("active")
+  deletedAt    DateTime?
+  user         Team?              @relation(fields: [userId], references: [id])
+  templates    CampaingTemplate[]
+
+  @@index([userId], map: "Campaing_userId_fkey")
+}
+
+model Template {
+  id        String             @id @default(uuid())
+  name      String
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  deletedAt DateTime?
+  userId    String?
+  campaings CampaingTemplate[]
+  user      Team?              @relation(fields: [userId], references: [id])
+  messages  TemplateMessage[]
+
+  @@index([userId], map: "Template_userId_fkey")
+}
+
+model TemplateMessage {
+  id          String    @id @default(uuid())
+  text        String?   @db.Text
+  audioUrl    String?   @db.Text
+  imageUrl    String?   @db.Text
+  documentUrl String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  templateId  String
+  videoUrl    String?   @db.Text
+  deletedAt   DateTime?
+  template    Template  @relation(fields: [templateId], references: [id])
+
+  @@index([templateId], map: "TemplateMessage_templateId_fkey")
+}
+
+model CampaingTemplate {
+  campaingId String
+  templateId String
+  campaing   Campaing @relation(fields: [campaingId], references: [id])
+  template   Template @relation(fields: [templateId], references: [id])
+
+  @@id([campaingId, templateId])
+  @@index([templateId], map: "CampaingTemplate_templateId_fkey")
+}
+
+model KbMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  question  String
+  answer    String   @db.Text
+  citations Json?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Segment {
+  id          String           @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  userId      String
+  deletedAt   DateTime?
+  user        Team             @relation(fields: [userId], references: [id])
+  contacts    SegmentContact[]
+
+  @@index([userId], map: "Segment_userId_fkey")
+}
+
+model SegmentContact {
+  id        String  @id @default(cuid())
+  segmentId String
+  name      String?
+  phone     String
+  email     String?
+  empresa   String?
+  extraData Json?
+  segment   Segment @relation(fields: [segmentId], references: [id])
+
+  @@index([segmentId], map: "SegmentContact_segmentId_fkey")
+}
+
+model CampaignDispatch {
+  id           String    @id @default(uuid())
+  campaignId   String
+  sessionName  String
+  contact      String
+  message      String    @db.Text
+  status       String    @default("pending")
+  error        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  messageOrder Int?
+  scheduledAt  DateTime?
+  deletedAt    DateTime?
+}
+
+model QuickReply {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  content     String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  audioUrl    String?  @db.Text
+  documentUrl String?  @db.Text
+  imageUrl    String?  @db.Text
+  videoUrl    String?  @db.Text
+  user        Team     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+model LeadFile {
+  id           String   @id @default(cuid())
+  url          String?  @db.Text
+  name         String
+  leadId       String
+  createdAt    DateTime @default(now())
+  documentType String?
+  fileData     Bytes?
+  mimeType     String?
+  originalName String?
+  size         Int?
+
+  lead Lead @relation(fields: [leadId], references: [id])
+
+  @@index([leadId], map: "LeadFile_leadId_fkey")
+}
+
+model AIConfig {
+  id                    String   @id @default(cuid())
+  userId                String?
+  assistantName         String   @default("Agnes")
+  assistantRole         String   @default("assistente virtual")
+  assistantTeam         String   @default("equipe do Dr. Marcelo")
+  assistantContext      String   @db.Text
+  greetingMessage       String   @db.Text
+  appointmentFlow       String   @db.Text
+  confirmationMessage   String   @db.Text
+  generalRules          String   @db.Text
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  user                  Team?    @relation(fields: [userId], references: [id])
+
+  @@unique([userId])
+  @@index([userId])
+}
