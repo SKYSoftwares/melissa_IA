@@ -6,7 +6,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 const WHATSAPP_SERVER_URL =
-  process.env.BACKEND_WPP_CONNECT || "https://marcelo.solidtech.digital";
+  process.env.BACKEND_WPP_CONNECT || "https://wpp.melissaia.com.br";
 
 export const runtime = "nodejs";
 
