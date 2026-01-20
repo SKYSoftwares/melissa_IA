@@ -182,7 +182,7 @@ const WhatsAppChats = () => {
     const pollStatus = async () => {
       try {
         const resp = await fetch(
-          `https://marcelo.solidtech.digital/${qrReconnectInfo.session}/status`
+          `https://wpp.melissaia.com.br/${qrReconnectInfo.session}/status`
         );
         const data = await resp.json();
 
@@ -764,7 +764,7 @@ const WhatsAppChats = () => {
     console.log("CHECANDO");
     try {
       const resp = await fetch(
-        `https://marcelo.solidtech.digital/${sessionName}/status`
+        `https://wpp.melissaia.com.br/${sessionName}/status`
       );
       const data = await resp.json();
       console.log(data);
@@ -780,7 +780,7 @@ const WhatsAppChats = () => {
       if (data.connectionState === "QR_CODE") {
         // 🚨 Buscar QR code base64 do endpoint
         const qrResp = await fetch(
-          `https://marcelo.solidtech.digital/${sessionName}/getqrcode`
+          `https://wpp.melissaia.com.br/${sessionName}/getqrcode`
         );
         const qrData = await qrResp.json();
         console.log(qrData);

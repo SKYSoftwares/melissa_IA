@@ -268,7 +268,7 @@ export default function ConexoesPage() {
     });
   };
 
-  const WHATSAPP_EXTERNAL_API = "https://marcelo.solidtech.digital";
+  const WHATSAPP_EXTERNAL_API = "https://wpp.melissaia.com.br";
 
   const loadWhatsAppSessions = async () => {
     try {
