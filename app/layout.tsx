@@ -6,9 +6,9 @@ import './globals.css';
 import Providers from './providers';
 
 export const metadata: Metadata = {
-    title: 'Clinica Odontológica - CRM Sistema Integrado',
+    title: 'Melissa IA - CRM',
     description:
-        'Plataforma CRM de clinicas odontológicas com WhatsApp, Pipeline e Inteligência Artificial',
+        'Plataforma CRM de clinicas médicas com WhatsApp, Pipeline e Inteligência Artificial',
     generator: 'v0.dev',
 };
 
