@@ -181,7 +181,7 @@ Válido por 1 hora.
           
           <div class="footer">
             <p><strong>Melissa IA</strong></p>
-            <p>📧 contato@melissaia.com.br | 📱 (11) 93922-6976/p>
+            <p>📧 contato@melissaia.com.br | 📱 (11) 93922-6976 </p>
             <p>Este é um email automático, não responda a esta mensagem.</p>
           </div>
         </div>
