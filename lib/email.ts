@@ -20,7 +20,7 @@ export const sendPasswordResetEmail = async (
 
   try {
     const data = await mg.messages.create(DOMAIN, {
-      from: `Melissa IA <no-reply@${DOMAIN}>`,
+      from: `Melissa IA <no-reply@melissaia.com.br>`,
       to: [email],
       subject: "🔐 Redefinição de Senha - Melissa IA CRM",
 
@@ -33,7 +33,7 @@ ${resetUrl}
 Válido por 1 hora.
       `,
 
-    html: `
+      html: `
       <!DOCTYPE html>
       <html lang="pt-BR">
       <head>
@@ -162,8 +162,19 @@ Válido por 1 hora.
               </ul>
             </div>
             
-            <p>Se o botão não funcionar, copie e cole o link abaixo no seu navegador:</p>
-            <div class="token-info">${resetUrl}</div>
+<p>Se o botão não funcionar, clique no link abaixo:</p>
+
+<p style="word-break: break-all; text-align: center;">
+  <a href="${resetUrl}" 
+     target="_blank"
+     style="
+       color: #7c3aed;
+       font-weight: bold;
+       text-decoration: underline;
+     ">
+     ${resetUrl}
+  </a>
+</p>
             
             <p>Se você tiver dúvidas ou precisar de ajuda, entre em contato conosco.</p>
           </div>
@@ -177,7 +188,7 @@ Válido por 1 hora.
       </body>
       </html>
     `,
-  });
+    });
 
     console.log("✅ Password changed email sent:", data.id);
     return { success: true, messageId: data.id };
@@ -191,7 +202,7 @@ Válido por 1 hora.
 export const sendPasswordChangedEmail = async (email: string) => {
   try {
     const data = await mg.messages.create(DOMAIN, {
-      from: `Melissa IA <no-reply@${DOMAIN}>`,
+      from: `Melissa IA <no-reply@melissaia.com.br>`,
       to: [email],
       subject: "✅ Senha Alterada com Sucesso - Melissa IA",
 
@@ -203,7 +214,7 @@ Sua senha foi alterada com sucesso em ${new Date().toLocaleString("pt-BR")}.
 Se não foi você, entre em contato imediatamente.
       `,
 
-    html: `
+      html: `
       <!DOCTYPE html>
       <html lang="pt-BR">
       <head>
@@ -281,8 +292,8 @@ Se não foi você, entre em contato imediatamente.
             <h2>Sucesso! 🎉</h2>
             
             <p>Sua senha foi alterada com sucesso em <strong>${new Date().toLocaleString(
-              "pt-BR"
-            )}</strong>.</p>
+        "pt-BR"
+      )}</strong>.</p>
             
             <div class="success">
               <p><span class="success-icon">✅</span> <strong>Confirmação:</strong></p>
@@ -293,9 +304,8 @@ Se não foi você, entre em contato imediatamente.
               </ul>
             </div>
             
-            <p>Para acessar sua conta, <a href="${
-              process.env.NEXTAUTH_URL
-            }/login" style="color: #667eea; text-decoration: none;">clique aqui</a>.</p>
+            <p>Para acessar sua conta, <a href="${process.env.NEXTAUTH_URL
+        }/login" style="color: #667eea; text-decoration: none;">clique aqui</a>.</p>
           </div>
           
           <div class="footer">
@@ -307,7 +317,7 @@ Se não foi você, entre em contato imediatamente.
       </body>
       </html>
     `,
-  });
+    });
 
     console.log("✅ Password changed email sent:", data.id);
     return { success: true, messageId: data.id };
