@@ -1,15 +1,25 @@
+// lib/mailgun.ts
 import Mailgun from "mailgun.js";
 import formData from "form-data";
 
-const mailgun = new Mailgun(formData);
+// Função para criar o cliente Mailgun
+export function getMailgunClient() {
+  const apiKey = process.env.MAILGUN_API_KEY;
+  const domain = process.env.MAILGUN_DOMAIN;
 
-const mg = mailgun.client({
-  username: "api",
-  key: process.env.MAILGUN_API_KEY!,
-  url: "https://api.mailgun.net",
-});
+  if (!apiKey || !domain) {
+    throw new Error("MAILGUN_API_KEY ou MAILGUN_DOMAIN não configurados!");
+  }
 
-const DOMAIN = process.env.MAILGUN_DOMAIN!;
+  const mailgun = new Mailgun(formData);
+  const mg = mailgun.client({
+    username: "api",
+    key: apiKey,
+    url: "https://api.mailgun.net",
+  });
+
+  return { mg, domain };
+}
 
 // Enviar email de redefinição de senha
 export const sendPasswordResetEmail = async (
@@ -18,8 +28,10 @@ export const sendPasswordResetEmail = async (
 ) => {
   const resetUrl = `${process.env.NEXTAUTH_URL}/redefinir-senha?token=${resetToken}`;
 
+  const { mg, domain } = getMailgunClient();
+
   try {
-    const data = await mg.messages.create(DOMAIN, {
+    const data = await mg.messages.create(domain, {
       from: `Melissa IA <no-reply@melissaia.com.br>`,
       to: [email],
       subject: "🔐 Redefinição de Senha - Melissa IA CRM",
@@ -200,8 +212,10 @@ Válido por 1 hora.
 };
 // Enviar email de confirmação de senha alterada
 export const sendPasswordChangedEmail = async (email: string) => {
+    const { mg, domain } = getMailgunClient();
+
   try {
-    const data = await mg.messages.create(DOMAIN, {
+    const data = await mg.messages.create(domain, {
       from: `Melissa IA <no-reply@melissaia.com.br>`,
       to: [email],
       subject: "✅ Senha Alterada com Sucesso - Melissa IA",
