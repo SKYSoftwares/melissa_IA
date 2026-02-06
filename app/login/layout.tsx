@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: "Dr. Zeus Capital - Login",
-  description: "Acesso ao sistema CRM da Dr. Zeus Capital",
+  title: "Melissa IA - Login",
+  description: "Acesso ao sistema CRM da Melissa IA",
   generator: "v0.dev",
 };
 

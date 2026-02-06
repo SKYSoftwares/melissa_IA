@@ -29,7 +29,7 @@ export function HeaderNav() {
                         <div className="md:hidden h-8 w-8 rounded-full overflow-hidden">
                             <img
                                 src="/images/zeus-capital-logo.png"
-                                alt="Dr. Zeus Capital"
+                                alt="Melissa IA"
                                 className="h-full w-full object-cover"
                             />
                         </div>
@@ -66,7 +66,7 @@ export function HeaderNav() {
                     <div className="md:hidden h-8 w-8 rounded-full overflow-hidden">
                         <img
                             src="/images/zeus-capital-logo.png"
-                            alt="Dr. Zeus Capital"
+                            alt="Melissa Ia"
                             className="h-full w-full object-cover"
                         />
                     </div>

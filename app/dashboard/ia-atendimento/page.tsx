@@ -44,7 +44,7 @@ export default function IAAttendancePage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: `🏠 **Oi! Sou a IA de atendimento da Dr. Zeus Capital! 😄**
+      content: `🏠 **Oi! Sou a IA de atendimento da Melissa IA! 😄**
 
 Sou especialista em **Home Equity** e estou aqui pra te ajudar com qualquer dúvida sobre nossos produtos!
 
@@ -298,7 +298,7 @@ Sou especialista em **Home Equity** e estou aqui pra te ajudar com qualquer dúv
                   IA de Atendimento - Home Equity
                 </h1>
                 <p className="text-sm text-gray-600">
-                  Assistente especializado em Home Equity da Dr. Zeus Capital
+                  Assistente especializado em Home Equity da Melissa IA
                 </p>
               </div>
             </div>

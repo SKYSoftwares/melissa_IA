@@ -32,7 +32,7 @@ export default function TermosServicoPage() {
                 <h1 className="text-2xl font-bold text-gray-900">
                   Termos de Serviço
                 </h1>
-                <p className="text-gray-600 text-sm">Dr. Zeus Capital - CRM</p>
+                <p className="text-gray-600 text-sm">Melissa IA - CRM</p>
               </div>
             </div>
             <Badge variant="outline" className="flex items-center gap-1">
@@ -58,7 +58,7 @@ export default function TermosServicoPage() {
               <div className="space-y-4">
                 <p className="text-gray-700 leading-relaxed">
                   Estes Termos de Serviço ("Termos") regem o uso do sistema CRM
-                  da Dr. Zeus Capital ("Serviço", "Plataforma", "Sistema"). Ao
+                  da Melissa IA ("Serviço", "Plataforma", "Sistema"). Ao
                   utilizar nosso serviço, você concorda com estes termos.
                 </p>
 
@@ -373,7 +373,7 @@ export default function TermosServicoPage() {
         <div className="max-w-4xl mx-auto px-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-semibold">Dr. Zeus Capital</h3>
+              <h3 className="font-semibold">Melissa IA</h3>
               <p className="text-gray-400 text-sm">Sistema CRM</p>
             </div>
             <div className="flex items-center gap-4">

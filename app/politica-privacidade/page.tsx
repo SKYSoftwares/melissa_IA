@@ -25,7 +25,7 @@ export default function PoliticaPrivacidadePage() {
                 <h1 className="text-2xl font-bold text-gray-900">
                   Política de Privacidade
                 </h1>
-                <p className="text-gray-600 text-sm">Dr. Zeus Capital - CRM</p>
+                <p className="text-gray-600 text-sm">Melissa IA - CRM</p>
               </div>
             </div>
             <Badge variant="outline" className="flex items-center gap-1">
@@ -50,7 +50,7 @@ export default function PoliticaPrivacidadePage() {
             <CardContent className="p-6">
               <div className="space-y-4">
                 <p className="text-gray-700 leading-relaxed">
-                  Esta Política de Privacidade descreve como o Dr. Zeus Capital
+                  Esta Política de Privacidade descreve como o Melissa IA
                   ("nós", "nosso" ou "empresa") coleta, usa e protege suas
                   informações quando você utiliza nosso sistema CRM.
                 </p>
@@ -294,7 +294,7 @@ export default function PoliticaPrivacidadePage() {
         <div className="max-w-4xl mx-auto px-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-semibold">Dr. Zeus Capital</h3>
+              <h3 className="font-semibold">Melissa IA</h3>
               <p className="text-gray-400 text-sm">Sistema CRM</p>
             </div>
             <div className="flex items-center gap-4">
