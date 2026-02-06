@@ -5,10 +5,10 @@ const prisma = new PrismaClient();
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await context.params; // ✅ OBRIGATÓRIO
     const { directorId } = await request.json();
 
     if (!directorId) {

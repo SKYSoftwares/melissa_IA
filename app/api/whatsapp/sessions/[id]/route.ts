@@ -5,12 +5,19 @@ const prisma = new PrismaClient();
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await context.params; // ✅ AQUI ESTÁ A CORREÇÃO
 
-    const session = await prisma.whatsAppSession.update({
+    if (!id) {
+      return NextResponse.json(
+        { status: false, error: "ID não informado" },
+        { status: 400 }
+      );
+    }
+
+    await prisma.whatsAppSession.update({
       where: { id },
       data: {
         deletedAt: new Date(),
@@ -21,8 +28,7 @@ export async function DELETE(
 
     return NextResponse.json({
       status: true,
-      message: "Sessão marcada como deletada",
-      session,
+      message: "Sessão deletada com sucesso",
     });
   } catch (err: any) {
     console.error("❌ Erro ao deletar sessão:", err);

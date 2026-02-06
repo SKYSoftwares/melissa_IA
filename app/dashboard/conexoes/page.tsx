@@ -928,14 +928,14 @@ export default function ConexoesPage() {
                               : "Nunca conectado"}
                           </p>
                           <div className="flex flex-wrap gap-2 pt-2">
-                            <Button
+                            {/* <Button
                               variant="outline"
                               size="sm"
                               className="flex-shrink-0 border-slate-200"
                             >
                               <Settings className="mr-2 h-3 w-3" />
                               Configurar
-                            </Button>
+                            </Button> */}
                             <Button
                               variant="outline"
                               size="sm"
@@ -961,12 +961,12 @@ export default function ConexoesPage() {
                                   return;
 
                                 await fetch(
-                                  `/api/whatsapp/sessions/${session.id}/delete`,
+                                  `/api/whatsapp/sessions/${session.id}`,
                                   {
                                     method: "DELETE",
                                   }
                                 );
-
+                                alert("Sessão deletada com sucesso!")
                                 await loadWhatsAppSessions?.();
                               }}
                             >
@@ -1165,13 +1165,13 @@ export default function ConexoesPage() {
                               <Settings className="mr-2 h-3 w-3" />
                               Configurar
                             </Button>
-                            <Button
+                            {/* <Button
                               size="sm"
                               className="flex-shrink-0 bg-sky-600 hover:bg-sky-700 text-white"
                             >
                               <Send className="mr-2 h-3 w-3" />
                               Usar
-                            </Button>
+                            </Button> */}
                             <Button
                               size="sm"
                               className="flex-shrink-0 bg-red-600 text-white hover:bg-red-700"

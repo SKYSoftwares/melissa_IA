@@ -147,39 +147,3 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
-
-// DELETE - Deletar sessão
-export async function DELETE(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const sessionName = searchParams.get("sessionName");
-
-    if (!sessionName) {
-      return NextResponse.json(
-        {
-          status: false,
-          error: "sessionName é obrigatório",
-        },
-        { status: 400 }
-      );
-    }
-
-    await prisma.whatsAppSession.delete({
-      where: { sessionName },
-    });
-
-    return NextResponse.json({
-      status: true,
-      message: "Sessão deletada com sucesso",
-    });
-  } catch (error) {
-    console.error("Erro ao deletar sessão:", error);
-    return NextResponse.json(
-      {
-        status: false,
-        error: "Erro interno do servidor",
-      },
-      { status: 500 }
-    );
-  }
-}

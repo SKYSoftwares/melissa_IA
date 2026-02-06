@@ -132,6 +132,7 @@ export default function ActiveCampaignsPage() {
                                                     method: 'DELETE',
                                                 }
                                             );
+                                            alert("Campanha excluida com sucesso!")
                                             loadActiveCampaigns();
                                         }}
                                     >

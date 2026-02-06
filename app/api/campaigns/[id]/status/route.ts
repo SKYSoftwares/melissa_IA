@@ -8,7 +8,7 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await context.params; // 👈 agora sim, await no params
+    const { id } = await context.params; // 👈 agora sim, await no params 
     const { status } = await req.json();
 
     if (!["active", "paused", "finished"].includes(status)) {

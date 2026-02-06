@@ -261,15 +261,20 @@ export default function LoginPage() {
                 {/* Logo e Header */}
                 <div className="text-center mb-8">
                     <div className="flex justify-center mb-4">
-                        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-sky-600 shadow-lg">
-                            <Activity className="h-9 w-9 text-white" />
+                       <div className="h-16 w-16 rounded-2xl shadow-lg overflow-hidden">
+  <img
+    src="/images/logo-inicial.png"
+    alt="Logo Melissa IA"
+    className="w-full h-full object-cover"
+  />
                         </div>
                     </div>
+
                     <h1 className="text-3xl font-semibold text-sky-900 mb-1">
-                        Odonto Clinic
+                        Melissa IA
                     </h1>
                     <p className="text-sky-700 text-base">
-                        Sistema de Gestão Odontológica
+                        Sistema de Gestão Médica
                     </p>
                 </div>
 
@@ -398,7 +403,7 @@ export default function LoginPage() {
                 {/* Footer */}
                 <div className="text-center mt-6">
                     <p className="text-xs text-slate-400">
-                        © 2024 Odonto Clinic. Todos os direitos reservados.
+                        © 2026 Melissa IA. Todos os direitos reservados.
                     </p>
                 </div>
             </div>

@@ -1,27 +1,25 @@
 import nodemailer from "nodemailer";
 
-// Configuração do Nodemailer para Hostinger
 const transporter = nodemailer.createTransport({
-  host: "smtp.hostinger.com",
-  port: 587,
-  secure: false, // true para 465, false para outras portas
+  host: "smtp.titan.email",
+  port: 465,
+  secure: true,
   auth: {
-    user: process.env.EMAIL_USER, // contato@drzeuscapital.com.br
-    pass: process.env.EMAIL_PASS, // Math563621@
+    user: process.env.EMAIL_USER, // email COMPLETO
+    pass: process.env.EMAIL_PASS, // senha do email
   },
-  tls: {
-    rejectUnauthorized: false,
-  },
+  // tls: {
+  //   rejectUnauthorized: false,
+  // },
 });
 
-// Verificar conexão
 export const verifyEmailConnection = async () => {
   try {
     await transporter.verify();
-    console.log("✅ Email server is ready to take our messages");
+    console.log("✅ SMTP HostGator conectado com sucesso");
     return true;
   } catch (error) {
-    console.error("❌ Email server connection failed:", error);
+    console.error("❌ Erro SMTP HostGator:", error);
     return false;
   }
 };
@@ -34,9 +32,9 @@ export const sendPasswordResetEmail = async (
   const resetUrl = `${process.env.NEXTAUTH_URL}/redefinir-senha?token=${resetToken}`;
 
   const mailOptions = {
-    from: `"Dr. Zeus Capital CRM" <${process.env.EMAIL_USER}>`,
+    from: `"Melissa IA" <${process.env.EMAIL_USER}>`,
     to: email,
-    subject: "🔐 Redefinição de Senha - Dr. Zeus Capital CRM",
+    subject: "🔐 Redefinição de Senha - Melissa IA CRM",
     html: `
       <!DOCTYPE html>
       <html lang="pt-BR">
@@ -132,13 +130,13 @@ export const sendPasswordResetEmail = async (
         <div class="container">
           <div class="header">
             <h1>🔐 Redefinição de Senha</h1>
-            <p style="margin: 10px 0 0 0; opacity: 0.9;">Dr. Zeus Capital CRM</p>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">Melisa IA</p>
           </div>
           
           <div class="content">
             <h2>Olá! 👋</h2>
             
-            <p>Recebemos uma solicitação para redefinir a senha da sua conta no <strong>Dr. Zeus Capital CRM</strong>.</p>
+            <p>Recebemos uma solicitação para redefinir a senha da sua conta no <strong>Melisa IA</strong>.</p>
             
             <p>Se você fez esta solicitação, clique no botão abaixo para criar uma nova senha:</p>
             
@@ -164,8 +162,8 @@ export const sendPasswordResetEmail = async (
           </div>
           
           <div class="footer">
-            <p><strong>Dr. Zeus Capital</strong></p>
-            <p>📧 ddiegerfernandes@gmail.com | 📱 (14) 99752-5533</p>
+            <p><strong>Melisa IA</strong></p>
+            <p>📧 contato@melissaia.com.br | 📱 (11) 93922-6976/p>
             <p>Este é um email automático, não responda a esta mensagem.</p>
           </div>
         </div>
@@ -173,7 +171,7 @@ export const sendPasswordResetEmail = async (
       </html>
     `,
     text: `
-      Redefinição de Senha - Dr. Zeus Capital CRM
+      Redefinição de Senha - Melisa IA
       
       Olá!
       
@@ -187,9 +185,9 @@ export const sendPasswordResetEmail = async (
       Se você não solicitou esta redefinição, ignore este email.
       
       --
-      Dr. Zeus Capital
-      Email: ddiegerfernandes@gmail.com
-      Telefone: (14) 99752-5533
+      Melisa IA
+      Email: contato@melissaia.com.br
+      Telefone: (11) 93922-6976
     `,
   };
 
@@ -206,9 +204,9 @@ export const sendPasswordResetEmail = async (
 // Enviar email de confirmação de senha alterada
 export const sendPasswordChangedEmail = async (email: string) => {
   const mailOptions = {
-    from: `"Dr. Zeus Capital CRM" <${process.env.EMAIL_USER}>`,
+    from: `"Melisa IA" <${process.env.EMAIL_USER}>`,
     to: email,
-    subject: "✅ Senha Alterada com Sucesso - Dr. Zeus Capital CRM",
+    subject: "✅ Senha Alterada com Sucesso - Melisa IA",
     html: `
       <!DOCTYPE html>
       <html lang="pt-BR">
@@ -280,7 +278,7 @@ export const sendPasswordChangedEmail = async (email: string) => {
         <div class="container">
           <div class="header">
             <h1>✅ Senha Alterada</h1>
-            <p style="margin: 10px 0 0 0; opacity: 0.9;">Dr. Zeus Capital CRM</p>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">Melisa IA</p>
           </div>
           
           <div class="content">
@@ -305,8 +303,8 @@ export const sendPasswordChangedEmail = async (email: string) => {
           </div>
           
           <div class="footer">
-            <p><strong>Dr. Zeus Capital</strong></p>
-            <p>📧 ddiegerfernandes@gmail.com | 📱 (14) 99752-5533</p>
+            <p><strong>Melisa IA</strong></p>
+            <p>📧 contato@melissaia.com.br | 📱 (11) 93922-6976</p>
             <p>Este é um email automático, não responda a esta mensagem.</p>
           </div>
         </div>
@@ -314,7 +312,7 @@ export const sendPasswordChangedEmail = async (email: string) => {
       </html>
     `,
     text: `
-      Senha Alterada com Sucesso - Dr. Zeus Capital CRM
+      Senha Alterada com Sucesso - Melisa IA
       
       Sucesso!
       
@@ -330,9 +328,9 @@ export const sendPasswordChangedEmail = async (email: string) => {
       Para acessar sua conta: ${process.env.NEXTAUTH_URL}/login
       
       --
-      Dr. Zeus Capital
-      Email: ddiegerfernandes@gmail.com
-      Telefone: (14) 99752-5533
+      Melisa IA
+      Email: contato@melissaia.com.br
+      Telefone: (11) 93922-6976
     `,
   };
 

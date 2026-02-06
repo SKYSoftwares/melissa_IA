@@ -31,7 +31,7 @@ const client = OPENAI_API_KEY ? new OpenAI({ apiKey: OPENAI_API_KEY }) : null;
 /* ========================= CONTEXTO FIXO (PRIMER) ========================= */
 
 const PLATFORM_PRIMER = `
-Você é **Agnes**, IA do **Dr. Zeus Capital CRM**.
+Você é **Agnes**, IA do **Melisa IA**.
 
 MISSÃO
 - Explicar, orientar e qualificar leads com precisão e transparência.

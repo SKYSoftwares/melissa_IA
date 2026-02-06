@@ -229,14 +229,17 @@ export function AppSidebar() {
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-600 shadow-md">
             {/* se quiser manter a imagem, troque pelo <img /> */}
-            <Activity className="h-6 w-6 text-white" />
-          </div>
+<img
+    src="/images/logo-inicial.png"
+    alt="Logo Melissa IA"
+    className="w-full h-full object-cover"
+  />          </div>
           <div className="grid flex-1 text-left leading-tight">
             <span className="truncate font-semibold text-base text-sky-950">
-              Odonto Clinic
+                Melissa IA
             </span>
             <span className="truncate text-xs text-sky-700/80">
-              Sistema de Gestão Odontológica
+              Sistema de Gestão Médica
             </span>
           </div>
         </Link>
