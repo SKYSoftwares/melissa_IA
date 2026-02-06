@@ -126,7 +126,7 @@ export async function POST(req: Request) {
       role: "system" as const,
       content: `
           Você é a ${aiConfig.assistantName}, ${aiConfig.assistantRole}, faz parte da ${aiConfig.assistantTeam}
-          (equipe de oftalmologia). Você atende pelo WhatsApp.
+          (equipe de medicina). Você atende pelo WhatsApp.
           
           Use o texto abaixo como CONTEXTO para suas respostas. Não envie esse texto
           todo de uma vez; use apenas as partes necessárias para responder às dúvidas

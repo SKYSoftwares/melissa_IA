@@ -77,7 +77,8 @@ export async function GET(req: NextRequest) {
       where: { id: teamMember.id },
       data: {
         googleAccessToken: tokens.access_token,
-        googleRefreshToken: tokens.refresh_token,
+        googleRefreshToken:
+          tokens.refresh_token ?? teamMember.googleRefreshToken,
         googleEmail: userInfo.data.email,
       },
     });

@@ -1,28 +1,15 @@
-import nodemailer from "nodemailer";
+import Mailgun from "mailgun.js";
+import formData from "form-data";
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.titan.email",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER, // email COMPLETO
-    pass: process.env.EMAIL_PASS, // senha do email
-  },
-  // tls: {
-  //   rejectUnauthorized: false,
-  // },
+const mailgun = new Mailgun(formData);
+
+const mg = mailgun.client({
+  username: "api",
+  key: process.env.MAILGUN_API_KEY!,
+  url: "https://api.mailgun.net",
 });
 
-export const verifyEmailConnection = async () => {
-  try {
-    await transporter.verify();
-    console.log("✅ SMTP HostGator conectado com sucesso");
-    return true;
-  } catch (error) {
-    console.error("❌ Erro SMTP HostGator:", error);
-    return false;
-  }
-};
+const DOMAIN = process.env.MAILGUN_DOMAIN!;
 
 // Enviar email de redefinição de senha
 export const sendPasswordResetEmail = async (
@@ -31,10 +18,21 @@ export const sendPasswordResetEmail = async (
 ) => {
   const resetUrl = `${process.env.NEXTAUTH_URL}/redefinir-senha?token=${resetToken}`;
 
-  const mailOptions = {
-    from: `"Melissa IA" <${process.env.EMAIL_USER}>`,
-    to: email,
-    subject: "🔐 Redefinição de Senha - Melissa IA CRM",
+  try {
+    const data = await mg.messages.create(DOMAIN, {
+      from: `Melissa IA <no-reply@${DOMAIN}>`,
+      to: [email],
+      subject: "🔐 Redefinição de Senha - Melissa IA CRM",
+
+      text: `
+Redefinição de Senha - Melissa IA
+
+Clique no link abaixo:
+${resetUrl}
+
+Válido por 1 hora.
+      `,
+
     html: `
       <!DOCTYPE html>
       <html lang="pt-BR">
@@ -130,21 +128,30 @@ export const sendPasswordResetEmail = async (
         <div class="container">
           <div class="header">
             <h1>🔐 Redefinição de Senha</h1>
-            <p style="margin: 10px 0 0 0; opacity: 0.9;">Melisa IA</p>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">Melissa IA</p>
           </div>
           
           <div class="content">
             <h2>Olá! 👋</h2>
             
-            <p>Recebemos uma solicitação para redefinir a senha da sua conta no <strong>Melisa IA</strong>.</p>
+            <p>Recebemos uma solicitação para redefinir a senha da sua conta no <strong>Melissa IA</strong>.</p>
             
             <p>Se você fez esta solicitação, clique no botão abaixo para criar uma nova senha:</p>
             
-            <div style="text-align: center;">
-              <a href="${resetUrl}" class="button">
-                🔑 Redefinir Minha Senha
-              </a>
-            </div>
+          <div style="text-align: center; margin: 30px 0;">
+    <a href="${resetUrl}" 
+       style="
+         background-color: #7c3aed;
+         color: white;
+         padding: 14px 24px;
+         text-decoration: none;
+         border-radius: 8px;
+         font-weight: bold;
+         display: inline-block;
+       ">
+       🔑 Redefinir Minha Senha
+    </a>
+  </div>
             
             <div class="warning">
               <p><span class="warning-icon">⚠️</span> <strong>Importante:</strong></p>
@@ -162,7 +169,7 @@ export const sendPasswordResetEmail = async (
           </div>
           
           <div class="footer">
-            <p><strong>Melisa IA</strong></p>
+            <p><strong>Melissa IA</strong></p>
             <p>📧 contato@melissaia.com.br | 📱 (11) 93922-6976/p>
             <p>Este é um email automático, não responda a esta mensagem.</p>
           </div>
@@ -170,43 +177,32 @@ export const sendPasswordResetEmail = async (
       </body>
       </html>
     `,
-    text: `
-      Redefinição de Senha - Melisa IA
-      
-      Olá!
-      
-      Recebemos uma solicitação para redefinir a senha da sua conta.
-      
-      Clique no link abaixo para criar uma nova senha:
-      ${resetUrl}
-      
-      Este link é válido por 1 hora e pode ser usado apenas uma vez.
-      
-      Se você não solicitou esta redefinição, ignore este email.
-      
-      --
-      Melisa IA
-      Email: contato@melissaia.com.br
-      Telefone: (11) 93922-6976
-    `,
-  };
+  });
 
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log("✅ Password reset email sent:", info.messageId);
-    return { success: true, messageId: info.messageId };
+    console.log("✅ Password changed email sent:", data.id);
+    return { success: true, messageId: data.id };
+
   } catch (error) {
-    console.error("❌ Failed to send password reset email:", error);
-    return { success: false, error: error };
+    console.error("❌ Failed to send password changed email:", error);
+    return { success: false, error };
   }
 };
-
 // Enviar email de confirmação de senha alterada
 export const sendPasswordChangedEmail = async (email: string) => {
-  const mailOptions = {
-    from: `"Melisa IA" <${process.env.EMAIL_USER}>`,
-    to: email,
-    subject: "✅ Senha Alterada com Sucesso - Melisa IA",
+  try {
+    const data = await mg.messages.create(DOMAIN, {
+      from: `Melissa IA <no-reply@${DOMAIN}>`,
+      to: [email],
+      subject: "✅ Senha Alterada com Sucesso - Melissa IA",
+
+      text: `
+Senha Alterada com Sucesso - Melissa IA
+
+Sua senha foi alterada com sucesso em ${new Date().toLocaleString("pt-BR")}.
+
+Se não foi você, entre em contato imediatamente.
+      `,
+
     html: `
       <!DOCTYPE html>
       <html lang="pt-BR">
@@ -278,7 +274,7 @@ export const sendPasswordChangedEmail = async (email: string) => {
         <div class="container">
           <div class="header">
             <h1>✅ Senha Alterada</h1>
-            <p style="margin: 10px 0 0 0; opacity: 0.9;">Melisa IA</p>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">Melissa IA</p>
           </div>
           
           <div class="content">
@@ -303,7 +299,7 @@ export const sendPasswordChangedEmail = async (email: string) => {
           </div>
           
           <div class="footer">
-            <p><strong>Melisa IA</strong></p>
+            <p><strong>Melissa IA</strong></p>
             <p>📧 contato@melissaia.com.br | 📱 (11) 93922-6976</p>
             <p>Este é um email automático, não responda a esta mensagem.</p>
           </div>
@@ -311,37 +307,13 @@ export const sendPasswordChangedEmail = async (email: string) => {
       </body>
       </html>
     `,
-    text: `
-      Senha Alterada com Sucesso - Melisa IA
-      
-      Sucesso!
-      
-      Sua senha foi alterada com sucesso em ${new Date().toLocaleString(
-        "pt-BR"
-      )}.
-      
-      Confirmação:
-      - Sua senha foi atualizada com segurança
-      - Você pode fazer login com a nova senha
-      - Se você não fez esta alteração, entre em contato conosco imediatamente
-      
-      Para acessar sua conta: ${process.env.NEXTAUTH_URL}/login
-      
-      --
-      Melisa IA
-      Email: contato@melissaia.com.br
-      Telefone: (11) 93922-6976
-    `,
-  };
+  });
 
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log("✅ Password changed email sent:", info.messageId);
-    return { success: true, messageId: info.messageId };
+    console.log("✅ Password changed email sent:", data.id);
+    return { success: true, messageId: data.id };
+
   } catch (error) {
     console.error("❌ Failed to send password changed email:", error);
-    return { success: false, error: error };
+    return { success: false, error };
   }
 };
-
-export default transporter;
