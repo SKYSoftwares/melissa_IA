@@ -26,7 +26,7 @@ export const sendPasswordResetEmail = async (
   email: string,
   resetToken: string
 ) => {
-  const resetUrl = `${process.env.NEXTAUTH_URL}/redefinir-senha?token=${resetToken}`;
+  const resetUrl = `https://crm.melissaia.com.br/redefinir-senha?token=${resetToken}`;
 
   const { mg, domain } = getMailgunClient();
 
@@ -318,8 +318,7 @@ Se não foi você, entre em contato imediatamente.
               </ul>
             </div>
             
-            <p>Para acessar sua conta, <a href="${process.env.NEXTAUTH_URL
-        }/login" style="color: #667eea; text-decoration: none;">clique aqui</a>.</p>
+            <p>Para acessar sua conta, <a href="https://crm.melissaia.com.br/login" style="color: #667eea; text-decoration: none;">clique aqui</a>.</p>
           </div>
           
           <div class="footer">
