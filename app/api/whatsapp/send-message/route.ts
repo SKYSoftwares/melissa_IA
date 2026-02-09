@@ -7,20 +7,20 @@ const prisma = new PrismaClient();
 const WHATSAPP_SERVER_URL = process.env.BACKEND_WPP_CONNECT;
 
 function formatBrazilNumber(numero: string) {
-  let n = numero.replace(/\D/g, '');
+    let n = numero.replace(/\D/g, '');
 
-  // adiciona 55 se não tiver
-  if (!n.startsWith('55')) {
-    n = '55' + n;
-  }
+    // adiciona 55 se não tiver
+    if (!n.startsWith('55')) {
+        n = '55' + n;
+    }
 
-  // garante 13 dígitos (55 + DDD + 9 + numero)
-  if (n.length === 12) {
-    // pode estar sem o 9
-    n = n.slice(0, 4) + '9' + n.slice(4);
-  }
+    // garante 13 dígitos (55 + DDD + 9 + numero)
+    if (n.length === 12) {
+        // pode estar sem o 9
+        n = n.slice(0, 4) + '9' + n.slice(4);
+    }
 
-  return n;
+    return n;
 }
 
 export async function POST(request: NextRequest) {
@@ -131,109 +131,113 @@ export async function POST(request: NextRequest) {
         }
         console.log("Número enviado ao WPP:", contact.phone);
 
-        console.log(`${WHATSAPP_SERVER_URL}/${sessionName}/sendmessage`);
+        const formattedPhone = formatBrazilNumber(contact.phone || '');
+        const chatId = (contact as any).chatId || null;
 
-        try {
-            // Enviar mensagem via API do wppconnect
-            const response = await axios.post(
+        // Detecta se é LID
+        const isLid = chatId && chatId.endsWith('@lid');
+
+        console.log('📌 Tipo de envio:', isLid ? 'LID (chatId)' : 'Número (telnumber)');
+
+        let response;
+
+        if (isLid) {
+            // 🔥 ENVIO VIA chatId (quando for @lid)
+            response = await axios.post(
+                `${WHATSAPP_SERVER_URL}/${sessionName}/sendText`,
+                {
+                    chatId: chatId,
+                    text: text,
+                },
+                { timeout: 30000 }
+            );
+        } else {
+            // ✅ ENVIO NORMAL VIA TELNUMBER
+            response = await axios.post(
                 `${WHATSAPP_SERVER_URL}/${sessionName}/sendmessage`,
                 {
-
-                    telnumber: contact.phone,
+                    telnumber: formattedPhone,
                     message: text,
                 },
-                {
-                    timeout: 30000, // 30 segundos
-                }
+                { timeout: 30000 }
+            );
+        }
+
+        console.log(response);
+
+        const result = response.data;
+
+        console.log(contact?.phone, 'phone');
+        if (result.status) {
+            // Mensagem enviada com sucesso
+            console.log(
+                `✅ Mensagem enviada com sucesso para ${contact.phone} via sessão ${sessionName}`
             );
 
-
-            console.log(response);
-
-            const result = response.data;
-
-            console.log(contact?.phone, 'phone');
-            if (result.status) {
-                // Mensagem enviada com sucesso
-                console.log(
-                    `✅ Mensagem enviada com sucesso para ${contact.phone} via sessão ${sessionName}`
-                );
-
-                // A mensagem será salva automaticamente pelo webhook quando o servidor WhatsApp disparar o evento 'sent'
-                // Mas vamos atualizar a última atividade do contato
-                if (contact?.id) {
-                    await prisma.whatsAppContact.update({
-                        where: { id: contact.id },
-                        data: {
-                            lastMessageAt: new Date(),
-                        },
-                    });
-                }
-
-                return NextResponse.json({
-                    success: true,
+            // A mensagem será salva automaticamente pelo webhook quando o servidor WhatsApp disparar o evento 'sent'
+            // Mas vamos atualizar a última atividade do contato
+            if (contact?.id) {
+                await prisma.whatsAppContact.update({
+                    where: { id: contact.id },
                     data: {
-                        messageId: result.message,
-                        contactPhone: contact.phone,
-                        sessionName: sessionName,
+                        lastMessageAt: new Date(),
                     },
                 });
-            } else {
-                // Erro no envio
-                console.error(
-                    `❌ Erro no envio para ${contact.phone}:`,
-                    result.message
-                );
-                return NextResponse.json(
-                    {
-                        success: false,
-                        error: 'Erro ao enviar mensagem',
-                        details: result.message,
-                    },
-                    { status: 400 }
-                );
             }
-        } catch (apiError: any) {
+
+            return NextResponse.json({
+                success: true,
+                data: {
+                    messageId: result.message,
+                    contactPhone: contact.phone,
+                    sessionName: sessionName,
+                },
+            });
+        } else {
+            // Erro no envio
             console.error(
-                '❌ Erro na comunicação com servidor WhatsApp:',
-                apiError
+                `❌ Erro no envio para ${contact.phone}:`,
+                result.message
             );
-
-            if (apiError.code === 'ECONNREFUSED') {
-                return NextResponse.json(
-                    {
-                        success: false,
-                        error: 'Servidor WhatsApp indisponível',
-                        details:
-                            'Não foi possível conectar ao servidor WhatsApp',
-                    },
-                    { status: 503 }
-                );
-            }
-
-            if (apiError.response) {
-                return NextResponse.json(
-                    {
-                        success: false,
-                        error: 'Erro no servidor WhatsApp',
-                        details:
-                            apiError.response.data?.message || apiError.message,
-                    },
-                    { status: 400 }
-                );
-            }
-
-            throw apiError;
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: 'Erro ao enviar mensagem',
+                    details: result.message,
+                },
+                { status: 400 }
+            );
         }
-    } catch (error: any) {
-        console.error('❌ Erro ao enviar mensagem WhatsApp:', error);
-        return NextResponse.json(
-            {
-                success: false,
-                error: 'Erro interno do servidor',
-                message: error.message,
-            },
-            { status: 500 }
+    } catch (apiError: any) {
+        console.error(
+            '❌ Erro na comunicação com servidor WhatsApp:',
+            apiError
         );
+
+        if (apiError.code === 'ECONNREFUSED') {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: 'Servidor WhatsApp indisponível',
+                    details:
+                        'Não foi possível conectar ao servidor WhatsApp',
+                },
+                { status: 503 }
+            );
+        }
+
+        if (apiError.response) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: 'Erro no servidor WhatsApp',
+                    details:
+                        apiError.response.data?.message || apiError.message,
+                },
+                { status: 400 }
+            );
+        }
+
+        throw apiError;
     }
 }
