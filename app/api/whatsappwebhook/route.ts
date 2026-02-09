@@ -27,37 +27,6 @@ function normalizePhone(phone: string): string {
   return normalized;
 }
 
-function extractRealNumber(message: any): string | null {
-  const possibleFields = [
-    message?.from,
-    message?.chatId,
-    message?.id?.remote,
-    message?.author,
-  ];
-
-  for (const field of possibleFields) {
-    if (!field) continue;
-
-    // ignora qualquer @lid
-    if (field.includes("@lid")) continue;
-
-    if (field.includes("@c.us")) {
-      return field.split("@")[0];
-    }
-  }
-
-  return null;
-}
-
-function normalizeChatId(chatId?: string): string {
-  if (!chatId) return "";
-
-  // remove qualquer sufixo (@lid, @c.us, etc)
-  const onlyNumber = chatId.split("@")[0];
-
-  return `${onlyNumber}@c.us`;
-}
-
 /* ----------------------- helpers de JID/Grupo ----------------------- */
 function getSenderJid(msg: any): string | null {
   return msg?.sender?.id || msg?.author || msg?.from || null;
@@ -169,18 +138,6 @@ export async function processReceivedMessage(
   try {
     console.log("📥 Processando mensagem recebida...");
 
-    console.log("FULL MESSAGE:", JSON.stringify(message, null, 2));
-
-    // 🔎 DEBUG PARA DESCOBRIR QUAL CAMPO TEM O NÚMERO REAL
-    console.log("🔎 DEBUG INBOUND:", {
-      from: message?.from,
-      chatId: message?.chatId,
-      author: message?.author,
-      senderId: message?.sender?.id,
-      senderPushname: message?.sender?.pushname,
-      fullSender: message?.sender,
-    });
-
     const userIdFromSession = await prisma.whatsAppSession.findUnique({
       where: { sessionName },
       select: { userId: true, id: true },
@@ -214,22 +171,18 @@ export async function processReceivedMessage(
     }
     inFlight.add(messageId);
 
-   const realPhone = extractRealNumber(message);
-console.log("===========DEBUG MESSAGE remote:==============", JSON.stringify(message, null, 2));
+    // 🔥 Use o ID REAL do WhatsApp (pode ser @lid, @c.us ou @g.us)
+    const chatIdReal = message.chatId || message.from;
 
-if (!realPhone) {
-  console.log("❌ Não foi possível encontrar número real no payload");
-  console.log("Payload completo:", JSON.stringify(message, null, 2));
-  return;
-}
+    if (!chatIdReal) {
+      console.log("❌ chatId ausente");
+      return;
+    }
 
-const phoneNumber = normalizePhone(realPhone);
+    // Número apenas para lead/contato
+    const phoneNumber = chatIdReal.split("@")[0];
 
-    // SEMPRE derive o chatId do telefone real
-    const chatIdNormalized = `${phoneNumber}@c.us`;
-
-
-    const isGroupChat = chatIdNormalized.endsWith("@g.us");
+    const isGroupChat = chatIdReal.endsWith("@g.us");
 
     // contato (cria/atualiza)
     let contact = await prisma.whatsAppContact.findUnique({
@@ -359,7 +312,7 @@ const phoneNumber = normalizePhone(realPhone);
     // salva/upserta mensagem
     const messageData = {
       messageId,
-      chatId: chatIdNormalized,
+      chatId: chatIdReal,
       sessionId,
       contactId: contact.id,
       contactPhone: phoneNumber,
@@ -378,27 +331,18 @@ const phoneNumber = normalizePhone(realPhone);
       author: author || null,
     };
 
-try {
-  await prisma.whatsAppMessage.upsert({
-    where: { messageId },
-    create: messageData,
-    update: {
-      body: messageData.body,
-      mediaUrl: messageData.mediaUrl,
-      mediaType: messageData.mediaType,
-      fileName: messageData.fileName,
-      caption: messageData.caption,
-      timestamp: messageData.timestamp,
-    },
-  });
-} catch (error: any) {
-  if (error.code === "P2002") {
-    console.log("⚠️ Mensagem já existe, ignorando:", messageId);
-  } else {
-    throw error;
-  }
-}
-
+    await prisma.whatsAppMessage.upsert({
+      where: { messageId },
+      create: messageData,
+      update: {
+        mediaUrl: messageData.mediaUrl ?? undefined,
+        mediaType: messageData.mediaType ?? undefined,
+        fileName: messageData.fileName ?? undefined,
+        caption: messageData.caption ?? undefined,
+        body: messageData.body ?? undefined,
+        timestamp: messageData.timestamp ?? undefined,
+      },
+    });
 
     console.log(`✅ Mensagem salva/atualizada: ${messageId} de ${phoneNumber}`);
   } catch (error) {
@@ -413,7 +357,7 @@ try {
 
 async function processSentMessage(
   message: any,
-  telnumber: string | undefined,
+  chatId: string | undefined,
   result: any,
   sessionId: string,
   sessionName: string
@@ -424,12 +368,15 @@ async function processSentMessage(
     });
 
     // 🔒 normaliza número (apenas dígitos)
-    const phoneNumber = normalizePhone(telnumber || "");
-    if (!phoneNumber) {
-      console.log('❌ Telefone ausente no evento "sent"');
+    if (!chatId) {
+      console.log("❌ chatId ausente no envio");
       return;
     }
-    const formattedPhone = normalizeChatId(`${phoneNumber}@c.us`);
+
+    const chatIdReal = chatId;
+
+    // número apenas para contato
+    const phoneNumber = chatIdReal.split("@")[0];
 
     let contact = await prisma.whatsAppContact.findUnique({
       where: {
@@ -445,7 +392,7 @@ async function processSentMessage(
       contact = await prisma.whatsAppContact.create({
         data: {
           phone: phoneNumber,
-          formattedPhone,
+    formattedPhone: phoneNumber,
           sessionId,
           lastMessageAt: new Date(),
         },
@@ -547,7 +494,7 @@ async function processSentMessage(
     await prisma.whatsAppMessage.create({
       data: {
         messageId,
-        chatId: formattedPhone,
+chatId: chatIdReal,
         sessionId,
         contactId: contact.id,
         contactPhone: phoneNumber,
@@ -742,7 +689,7 @@ export async function POST(request: NextRequest) {
     } else if (event === "sent") {
       await processSentMessage(
         message,
-        telnumber,
+  message?.chatId || telnumber, // usa chatId real se existir
         result,
         whatsappSession.id,
         session
