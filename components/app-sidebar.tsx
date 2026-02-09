@@ -336,7 +336,8 @@ export function AppSidebar() {
             "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-sky-500 hover:bg-sky-50 transition",
             collapsed && "justify-center"
           )}
-        >
+        > 
+        
           <ChevronLeft
             className={cn(
               "h-4 w-4 transition-transform",
