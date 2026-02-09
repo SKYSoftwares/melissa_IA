@@ -133,24 +133,13 @@ export async function POST(request: NextRequest) {
 
         console.log(`${WHATSAPP_SERVER_URL}/${sessionName}/sendmessage`);
 
-        const cleanNumber = contact.phone
-            .split("@")[0]      // remove @c.us
-            .split("-")[0]      // remove qualquer UUID grudado
-            .replace(/\D/g, ""); // só números
-
-        console.log({
-            url: `${WHATSAPP_SERVER_URL}/${sessionName}/sendmessage`,
-telnumber: formatBrazilNumber(cleanNumber),
-            message: text,
-        });
-
         try {
             // Enviar mensagem via API do wppconnect
             const response = await axios.post(
                 `${WHATSAPP_SERVER_URL}/${sessionName}/sendmessage`,
                 {
 
-                    telnumber: formatBrazilNumber(cleanNumber),
+                    telnumber: contact.phone,
                     message: text,
                 },
                 {
