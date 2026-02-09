@@ -6,6 +6,7 @@ const prisma = new PrismaClient();
 
 const WHATSAPP_SERVER_URL = process.env.BACKEND_WPP_CONNECT;
 
+
 function formatBrazilNumber(numero: string) {
     let n = numero.replace(/\D/g, '');
 

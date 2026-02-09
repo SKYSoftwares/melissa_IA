@@ -27,6 +27,18 @@ function normalizePhone(phone: string): string {
   return normalized;
 }
 
+function normalizeChatId(chatId: string): string {
+  if (!chatId) return "";
+  // remove prefixos true_ ou false_
+  let normalized = chatId.replace(/^true_|^false_/, "");
+  // remove hash depois do último "_"
+  const lastUnderscore = normalized.lastIndexOf("_");
+  if (lastUnderscore > 0) {
+    normalized = normalized.slice(0, lastUnderscore);
+  }
+  return normalized; // ex: "61951262609446@lid"
+}
+
 /* ----------------------- helpers de JID/Grupo ----------------------- */
 function getSenderJid(msg: any): string | null {
   return msg?.sender?.id || msg?.author || msg?.from || null;
@@ -171,18 +183,11 @@ export async function processReceivedMessage(
     }
     inFlight.add(messageId);
 
-    // 🔥 Use o ID REAL do WhatsApp (pode ser @lid, @c.us ou @g.us)
     const chatIdReal = message.chatId || message.from;
+    const normalizedChat = normalizeChatId(chatIdReal);
 
-    if (!chatIdReal) {
-      console.log("❌ chatId ausente");
-      return;
-    }
-
-    // Número apenas para lead/contato
-    const phoneNumber = chatIdReal.split("@")[0];
-
-    const isGroupChat = chatIdReal.endsWith("@g.us");
+    const phoneNumber = normalizedChat.split("@")[0];
+    const isGroupChat = normalizedChat.endsWith("@g.us") || normalizedChat.endsWith("@g.lid");
 
     // contato (cria/atualiza)
     let contact = await prisma.whatsAppContact.findUnique({
@@ -193,6 +198,28 @@ export async function processReceivedMessage(
         },
       },
     });
+
+    if (!contact) {
+      // cria novo contato
+      contact = await prisma.whatsAppContact.create({
+        data: {
+          phone: phoneNumber,
+          formattedPhone: phoneNumber,
+          sessionId,
+          lastMessageAt: new Date(timestamp * 1000),
+          isGroup: isGroupChat,
+        },
+      });
+    } else {
+      await prisma.whatsAppContact.update({
+        where: { id: contact.id },
+        data: {
+          lastMessageAt: new Date(timestamp * 1000),
+          isGroup: isGroupChat,
+        },
+      });
+    }
+
 
     const stableAvatar =
       sender?.profilePicUrlStable || sender?.profilePicThumbObj?.eurl || null;
@@ -372,11 +399,9 @@ async function processSentMessage(
       console.log("❌ chatId ausente no envio");
       return;
     }
-
     const chatIdReal = chatId;
-
-    // número apenas para contato
-    const phoneNumber = chatIdReal.split("@")[0];
+    const normalizedChat = normalizeChatId(chatIdReal);
+    const phoneNumber = normalizedChat.split("@")[0];
 
     let contact = await prisma.whatsAppContact.findUnique({
       where: {
@@ -387,17 +412,15 @@ async function processSentMessage(
       },
     });
 
-
     if (!contact) {
       contact = await prisma.whatsAppContact.create({
         data: {
           phone: phoneNumber,
-    formattedPhone: phoneNumber,
+          formattedPhone: phoneNumber,
           sessionId,
           lastMessageAt: new Date(),
         },
       });
-      console.log(`✅ Novo contato criado para envio: ${phoneNumber}`);
     } else {
       await prisma.whatsAppContact.update({
         where: { id: contact.id },
@@ -494,7 +517,7 @@ async function processSentMessage(
     await prisma.whatsAppMessage.create({
       data: {
         messageId,
-chatId: chatIdReal,
+        chatId: normalizedChat,
         sessionId,
         contactId: contact.id,
         contactPhone: phoneNumber,
@@ -689,7 +712,7 @@ export async function POST(request: NextRequest) {
     } else if (event === "sent") {
       await processSentMessage(
         message,
-  message?.chatId || telnumber, // usa chatId real se existir
+        message?.chatId || telnumber, // usa chatId real se existir
         result,
         whatsappSession.id,
         session
