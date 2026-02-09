@@ -6,24 +6,6 @@ const prisma = new PrismaClient();
 
 const WHATSAPP_SERVER_URL = process.env.BACKEND_WPP_CONNECT;
 
-
-function formatBrazilNumber(numero: string) {
-    let n = numero.replace(/\D/g, '');
-
-    // adiciona 55 se não tiver
-    if (!n.startsWith('55')) {
-        n = '55' + n;
-    }
-
-    // garante 13 dígitos (55 + DDD + 9 + numero)
-    if (n.length === 12) {
-        // pode estar sem o 9
-        n = n.slice(0, 4) + '9' + n.slice(4);
-    }
-
-    return n;
-}
-
 export async function POST(request: NextRequest) {
     try {
         const { contactId, text, sessionName } = await request.json();
@@ -131,38 +113,34 @@ export async function POST(request: NextRequest) {
             );
         }
         console.log("Número enviado ao WPP:", contact.phone);
-
-        const formattedPhone = formatBrazilNumber(contact.phone || '');
-        const chatId = (contact as any).chatId || null;
-
-        // Detecta se é LID
-        const isLid = chatId && chatId.endsWith('@lid');
-
-        console.log('📌 Tipo de envio:', isLid ? 'LID (chatId)' : 'Número (telnumber)');
-
         let response;
 
-        if (isLid) {
-            // 🔥 ENVIO VIA chatId (quando for @lid)
+        // Pega chatId do banco, se existir
+        let chatIdLid: string | null = null;
+
+        const lastMsg = await prisma.whatsAppMessage.findFirst({
+            where: { contactId: contact.id },
+            orderBy: { timestamp: 'desc' },
+        });
+
+        if (lastMsg?.chatId && lastMsg.chatId.endsWith('@lid')) {
+            chatIdLid = lastMsg.chatId;
+        }
+
+        if (chatIdLid) {
             response = await axios.post(
                 `${WHATSAPP_SERVER_URL}/${sessionName}/sendText`,
-                {
-                    chatId: chatId,
-                    text: text,
-                },
+                { chatId: chatIdLid, text },
                 { timeout: 30000 }
             );
         } else {
-            // ✅ ENVIO NORMAL VIA TELNUMBER
             response = await axios.post(
                 `${WHATSAPP_SERVER_URL}/${sessionName}/sendmessage`,
-                {
-                    telnumber: formattedPhone,
-                    message: text,
-                },
+                { telnumber: contact.phone, message: text },
                 { timeout: 30000 }
             );
         }
+
 
         console.log(response);
 
