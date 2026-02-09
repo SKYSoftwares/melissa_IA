@@ -141,7 +141,6 @@ export async function POST(request: NextRequest) {
             );
         }
 
-
         console.log(response);
 
         const result = response.data;
