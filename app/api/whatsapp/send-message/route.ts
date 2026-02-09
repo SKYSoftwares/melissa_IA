@@ -6,9 +6,38 @@ const prisma = new PrismaClient();
 
 const WHATSAPP_SERVER_URL = process.env.BACKEND_WPP_CONNECT;
 
+function formatBrazilNumber(numero: string) {
+  let n = numero.replace(/\D/g, '');
+
+  // adiciona 55 se não tiver
+  if (!n.startsWith('55')) {
+    n = '55' + n;
+  }
+
+  // garante 13 dígitos (55 + DDD + 9 + numero)
+  if (n.length === 12) {
+    // pode estar sem o 9
+    n = n.slice(0, 4) + '9' + n.slice(4);
+  }
+
+  return n;
+}
+
 export async function POST(request: NextRequest) {
     try {
         const { contactId, text, sessionName } = await request.json();
+
+        let contact = null;
+
+        // Caso 1: É UUID (formato padrão com hífens)
+        const isUUID = /^[0-9a-fA-F-]{36}$/.test(contactId);
+
+        // Caso 2: É WhatsApp ID
+        let cleanPhone = '';
+
+        if (!isUUID) {
+            cleanPhone = contactId.split('@')[0].replace(/\D/g, '');
+        }
 
         if (!contactId || !text || !sessionName) {
             return NextResponse.json(
@@ -21,13 +50,18 @@ export async function POST(request: NextRequest) {
 
         console.log(`📱 Enviando mensagem WhatsApp para contato: ${contactId}`);
 
-        // Buscar dados do contato
-        const contact = await prisma.whatsAppContact.findUnique({
-            where: { id: contactId },
-            include: {
-                session: true,
-            },
-        });
+
+        if (isUUID) {
+            contact = await prisma.whatsAppContact.findUnique({
+                where: { id: contactId },
+                include: { session: true },
+            });
+        } else {
+            contact = await prisma.whatsAppContact.findFirst({
+                where: { phone: cleanPhone },
+                include: { session: true },
+            });
+        }
 
         if (!contact) {
             return NextResponse.json(
@@ -95,20 +129,35 @@ export async function POST(request: NextRequest) {
                 { status: 502 }
             );
         }
+        console.log("Número enviado ao WPP:", contact.phone);
+
         console.log(`${WHATSAPP_SERVER_URL}/${sessionName}/sendmessage`);
+
+        const cleanNumber = contact.phone
+            .split("@")[0]      // remove @c.us
+            .split("-")[0]      // remove qualquer UUID grudado
+            .replace(/\D/g, ""); // só números
+
+        console.log({
+            url: `${WHATSAPP_SERVER_URL}/${sessionName}/sendmessage`,
+telnumber: formatBrazilNumber(cleanNumber),
+            message: text,
+        });
 
         try {
             // Enviar mensagem via API do wppconnect
             const response = await axios.post(
                 `${WHATSAPP_SERVER_URL}/${sessionName}/sendmessage`,
                 {
-                    telnumber: contact.phone,
+
+                    telnumber: formatBrazilNumber(cleanNumber),
                     message: text,
                 },
                 {
                     timeout: 30000, // 30 segundos
                 }
             );
+
 
             console.log(response);
 
@@ -123,12 +172,14 @@ export async function POST(request: NextRequest) {
 
                 // A mensagem será salva automaticamente pelo webhook quando o servidor WhatsApp disparar o evento 'sent'
                 // Mas vamos atualizar a última atividade do contato
-                await prisma.whatsAppContact.update({
-                    where: { id: contactId },
-                    data: {
-                        lastMessageAt: new Date(),
-                    },
-                });
+                if (contact?.id) {
+                    await prisma.whatsAppContact.update({
+                        where: { id: contact.id },
+                        data: {
+                            lastMessageAt: new Date(),
+                        },
+                    });
+                }
 
                 return NextResponse.json({
                     success: true,

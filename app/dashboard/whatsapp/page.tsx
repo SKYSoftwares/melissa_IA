@@ -274,11 +274,9 @@ const WhatsAppChats = () => {
 
       const query = `/api/whatsapp/messages?chatId=${encodeURIComponent(
         chatId
-      )}${
-        sessionName ? `&sessionName=${encodeURIComponent(sessionName)}` : ""
-      }${sessionId ? `&sessionId=${encodeURIComponent(sessionId)}` : ""}${
-        showArchived ? `&showArchived=true` : ""
-      }`;
+      )}${sessionName ? `&sessionName=${encodeURIComponent(sessionName)}` : ""
+        }${sessionId ? `&sessionId=${encodeURIComponent(sessionId)}` : ""}${showArchived ? `&showArchived=true` : ""
+        }`;
 
       const response = await fetch(query);
       const data = await response.json();
@@ -383,7 +381,7 @@ const WhatsAppChats = () => {
 
     try {
       const formData = new FormData();
-      formData.append("contactId", selectedChat.chatId);
+      formData.append("contactId", selectedChat.id);
       formData.append("sessionName", selectedChat.sessionName);
 
       if (typeof audio === "string") {
@@ -442,7 +440,7 @@ const WhatsAppChats = () => {
 
     try {
       const formData = new FormData();
-      formData.append("contactId", selectedChat.chatId);
+      formData.append("contactId", selectedChat.id);
       formData.append("sessionName", selectedChat.sessionName);
       formData.append("caption", newMessage || ""); // opcional: legenda
 
@@ -593,16 +591,17 @@ const WhatsAppChats = () => {
 
     setSending(true);
     try {
+
       const response = await fetch("/api/whatsapp/send-message", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          contactId: selectedChat.chatId,
-          text: finalText.trim(),
-          sessionName: selectedChat.sessionName,
-        }),
+       body: JSON.stringify({
+  contactId: selectedChat.id, // UUID
+  text: finalText.trim(),
+  sessionName: selectedChat.sessionName,
+})
       });
 
       const result = await response.json();
@@ -986,9 +985,8 @@ const WhatsAppChats = () => {
 
               {/* Lista de Chats - Lado Esquerdo (Sidebar) */}
               <div
-                className={`${styles.chatSidebar} ${
-                  isMobileSidebarOpen ? styles.mobileOpen : ""
-                }`}
+                className={`${styles.chatSidebar} ${isMobileSidebarOpen ? styles.mobileOpen : ""
+                  }`}
               >
                 {/* Header da sidebar com botão de fechar para mobile */}
                 <div
@@ -1182,9 +1180,8 @@ const WhatsAppChats = () => {
                   {chatsFilteredBySession.map((chat) => (
                     <div
                       key={chat.id}
-                      className={`list-group-item list-group-item-action border-0 ${
-                        styles.chatListItem
-                      } ${selectedChat?.id === chat.id ? styles.active : ""}`}
+                      className={`list-group-item list-group-item-action border-0 ${styles.chatListItem
+                        } ${selectedChat?.id === chat.id ? styles.active : ""}`}
                       onClick={() => {
                         console.log("🎯 Chat selecionado:", chat);
                         setSelectedChat(chat);
@@ -1266,17 +1263,15 @@ const WhatsAppChats = () => {
                               }}
                             >
                               {chat.lastMessage.text &&
-                              chat.lastMessage.text.length > 40
+                                chat.lastMessage.text.length > 40
                                 ? chat.lastMessage.text.substring(0, 40) + "..."
                                 : chat.lastMessage.text}
                               <span
-                                className={`badge badge-sm me-1 ${
-                                  styles.badgeHover
-                                } ${
-                                  chat.lastMessage.direction === "outbound"
+                                className={`badge badge-sm me-1 ${styles.badgeHover
+                                  } ${chat.lastMessage.direction === "outbound"
                                     ? "bg-success"
                                     : "bg-success"
-                                }`}
+                                  }`}
                                 style={{
                                   paddingLeft: "5px",
                                   color:
@@ -1365,9 +1360,8 @@ const WhatsAppChats = () => {
 
               {/* Área de Mensagens - Lado Direito */}
               <div
-                className={`${styles.messageArea} ${
-                  isMobileSidebarOpen && isMobile ? styles.sidebarOpen : ""
-                }`}
+                className={`${styles.messageArea} ${isMobileSidebarOpen && isMobile ? styles.sidebarOpen : ""
+                  }`}
               >
                 {selectedChat ? (
                   <>
@@ -1465,17 +1459,15 @@ const WhatsAppChats = () => {
                           onClick={() => setAiMode(!aiMode)}
                         >
                           <div
-                            className={`${styles.switchTrack} ${
-                              aiMode ? styles.active : ""
-                            }`}
+                            className={`${styles.switchTrack} ${aiMode ? styles.active : ""
+                              }`}
                           >
                             <div className={styles.switchThumb}></div>
                           </div>
 
                           <span
-                            className={`${styles.switchLabel} ${
-                              aiMode ? styles.active : ""
-                            }`}
+                            className={`${styles.switchLabel} ${aiMode ? styles.active : ""
+                              }`}
                           >
                             {aiMode ? "AI ON" : "AI OFF"}
                           </span>
@@ -1498,32 +1490,30 @@ const WhatsAppChats = () => {
                             {/* Separador de data */}
                             {(index === 0 ||
                               formatDate(message.timestamp) !==
-                                formatDate(messages[index - 1].timestamp)) && (
-                              <div className={styles.dateSeparator}>
-                                <span className={styles.dateLabel}>
-                                  {formatDate(message.timestamp)}
-                                </span>
-                              </div>
-                            )}
+                              formatDate(messages[index - 1].timestamp)) && (
+                                <div className={styles.dateSeparator}>
+                                  <span className={styles.dateLabel}>
+                                    {formatDate(message.timestamp)}
+                                  </span>
+                                </div>
+                              )}
 
                             <div
-                              className={`${styles.messageWrapper} ${
-                                message.direction === "outbound"
+                              className={`${styles.messageWrapper} ${message.direction === "outbound"
                                   ? styles.outbound
                                   : styles.inbound
-                              }`}
+                                }`}
                             >
                               <div
-                                className={`${styles.messageBubble} ${
-                                  message.direction === "outbound"
+                                className={`${styles.messageBubble} ${message.direction === "outbound"
                                     ? styles.outbound
                                     : styles.inbound
-                                }`}
+                                  }`}
                               >
                                 {/* Mensagem de Áudio */}
                                 {(message.type === "audio" ||
                                   message.type === "ptt") &&
-                                (message.mediaUrl || message.body) ? (
+                                  (message.mediaUrl || message.body) ? (
                                   <div className={styles.audioMessage}>
                                     <div className="d-flex align-items-center gap-2">
                                       <i
@@ -1588,9 +1578,9 @@ const WhatsAppChats = () => {
                                             message.mediaUrl || message.body
                                           )?.includes("mmg.whatsapp.net")
                                             ? `/api/whatsapp/proxy-image?url=${encodeURIComponent(
-                                                (message.mediaUrl ||
-                                                  message.body) as string
-                                              )}`
+                                              (message.mediaUrl ||
+                                                message.body) as string
+                                            )}`
                                             : message.mediaUrl || message.body
                                         }
                                         target="_blank"
@@ -1614,11 +1604,11 @@ const WhatsAppChats = () => {
                                     src={
                                       isMounted
                                         ? URL.createObjectURL(
-                                            base64ToBlob(
-                                              message.body,
-                                              message.mimetype
-                                            )
+                                          base64ToBlob(
+                                            message.body,
+                                            message.mimetype
                                           )
+                                        )
                                         : ""
                                     }
                                     width="100%"
@@ -1641,9 +1631,9 @@ const WhatsAppChats = () => {
                                             message.mediaUrl || message.body
                                           )?.includes("mmg.whatsapp.net")
                                             ? `/api/whatsapp/proxy-image?url=${encodeURIComponent(
-                                                (message.mediaUrl ||
-                                                  message.body) as string
-                                              )}`
+                                              (message.mediaUrl ||
+                                                message.body) as string
+                                            )}`
                                             : message.mediaUrl || message.body
                                         }
                                         alt={message.caption || "Imagem"}
@@ -1683,9 +1673,9 @@ const WhatsAppChats = () => {
                                             message.mediaUrl || message.body
                                           )?.includes("mmg.whatsapp.net")
                                             ? `/api/whatsapp/proxy-image?url=${encodeURIComponent(
-                                                (message.mediaUrl ||
-                                                  message.body) as string
-                                              )}`
+                                              (message.mediaUrl ||
+                                                message.body) as string
+                                            )}`
                                             : message.mediaUrl || message.body
                                         }
                                         controls
@@ -1885,7 +1875,7 @@ const WhatsAppChats = () => {
                                   if (file && selectedChat) {
                                     try {
                                       const result = await enviarPDF(
-                                        selectedChat.chatId,
+                                        selectedChat.id,
                                         selectedChat.sessionName,
                                         file
                                       );
@@ -1908,8 +1898,7 @@ const WhatsAppChats = () => {
                                         );
                                       } else {
                                         alert(
-                                          `Erro ao enviar PDF: ${
-                                            result.error || result.details
+                                          `Erro ao enviar PDF: ${result.error || result.details
                                           }`
                                         );
                                       }
@@ -1939,7 +1928,7 @@ const WhatsAppChats = () => {
                                   if (file && selectedChat) {
                                     try {
                                       const result = await enviarVideo(
-                                        selectedChat.chatId,
+                                        selectedChat.id,
                                         selectedChat.sessionName,
                                         file
                                       );
@@ -1962,8 +1951,7 @@ const WhatsAppChats = () => {
                                         );
                                       } else {
                                         alert(
-                                          `Erro ao enviar vídeo: ${
-                                            result.error || result.details
+                                          `Erro ao enviar vídeo: ${result.error || result.details
                                           }`
                                         );
                                       }
@@ -1980,9 +1968,8 @@ const WhatsAppChats = () => {
                               />
                             </label>
                             <button
-                              className={`${styles.audioButton} ${
-                                isRecording ? styles.recording : ""
-                              }`}
+                              className={`${styles.audioButton} ${isRecording ? styles.recording : ""
+                                }`}
                               onClick={
                                 isRecording ? stopRecording : startRecording
                               }

@@ -261,12 +261,12 @@ export default function LoginPage() {
                 {/* Logo e Header */}
                 <div className="text-center mb-8">
                     <div className="flex justify-center mb-4">
-                       <div className="h-16 w-16 rounded-2xl shadow-lg overflow-hidden">
-  <img
-    src="/images/logo-inicial.png"
-    alt="Logo Melissa IA"
-    className="w-full h-full object-cover"
-  />
+                        <div className="h-16 w-16 rounded-2xl shadow-lg overflow-hidden">
+                            <img
+                                src="/images/logo-inicial.png"
+                                alt="Logo Melissa IA"
+                                className="w-full h-full object-cover"
+                            />
                         </div>
                     </div>
 

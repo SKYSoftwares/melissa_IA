@@ -27,22 +27,35 @@ function normalizePhone(phone: string): string {
   return normalized;
 }
 
-function normalizeChatId(chatId?: string, sessionId?: string): string {
+function extractRealNumber(message: any): string | null {
+  const possibleFields = [
+    message?.from,
+    message?.chatId,
+    message?.id?.remote,
+    message?.author,
+  ];
+
+  for (const field of possibleFields) {
+    if (!field) continue;
+
+    // ignora qualquer @lid
+    if (field.includes("@lid")) continue;
+
+    if (field.includes("@c.us")) {
+      return field.split("@")[0];
+    }
+  }
+
+  return null;
+}
+
+function normalizeChatId(chatId?: string): string {
   if (!chatId) return "";
 
-  const isGroup = chatId.endsWith("@g.us");
-  const isUser = chatId.endsWith("@c.us");
+  // remove qualquer sufixo (@lid, @c.us, etc)
+  const onlyNumber = chatId.split("@")[0];
 
-  // remove sufixo
-  let raw = chatId.replace(/(@c\.us|@g\.us)$/i, "");
-
-  // normaliza como se fosse número de telefone
-  raw = normalizePhone(raw);
-
-  if (isGroup) return `${raw}@g.us-${sessionId}`;
-  if (isUser) return `${raw}@c.us-${sessionId}`;
-
-  return raw; // fallback se vier algo diferente
+  return `${onlyNumber}@c.us`;
 }
 
 /* ----------------------- helpers de JID/Grupo ----------------------- */
@@ -136,8 +149,7 @@ async function fetchMediaBase64(
 
   if (!resp.data?.status) {
     throw new Error(
-      `download-media falhou: ${resp.data?.reason || "unknown"} - ${
-        resp.data?.message || ""
+      `download-media falhou: ${resp.data?.reason || "unknown"} - ${resp.data?.message || ""
       }`
     );
   }
@@ -156,6 +168,18 @@ export async function processReceivedMessage(
 ) {
   try {
     console.log("📥 Processando mensagem recebida...");
+
+    console.log("FULL MESSAGE:", JSON.stringify(message, null, 2));
+
+    // 🔎 DEBUG PARA DESCOBRIR QUAL CAMPO TEM O NÚMERO REAL
+    console.log("🔎 DEBUG INBOUND:", {
+      from: message?.from,
+      chatId: message?.chatId,
+      author: message?.author,
+      senderId: message?.sender?.id,
+      senderPushname: message?.sender?.pushname,
+      fullSender: message?.sender,
+    });
 
     const userIdFromSession = await prisma.whatsAppSession.findUnique({
       where: { sessionName },
@@ -190,18 +214,30 @@ export async function processReceivedMessage(
     }
     inFlight.add(messageId);
 
-    const phoneNumber = normalizePhone(from);
-    const chatIdNormalized = normalizeChatId(
-      chatId || `${phoneNumber}@c.us`,
-      userIdFromSession?.id
-    );
+   const realPhone = extractRealNumber(message);
+console.log("===========DEBUG MESSAGE remote:==============", JSON.stringify(message, null, 2));
+
+if (!realPhone) {
+  console.log("❌ Não foi possível encontrar número real no payload");
+  console.log("Payload completo:", JSON.stringify(message, null, 2));
+  return;
+}
+
+const phoneNumber = normalizePhone(realPhone);
+
+    // SEMPRE derive o chatId do telefone real
+    const chatIdNormalized = `${phoneNumber}@c.us`;
+
+
     const isGroupChat = chatIdNormalized.endsWith("@g.us");
 
     // contato (cria/atualiza)
-    let contact = await prisma.whatsAppContact.findFirst({
+    let contact = await prisma.whatsAppContact.findUnique({
       where: {
-        phone: phoneNumber,
-        session: { userId: userIdFromSession?.userId ?? "" },
+        phone_sessionId: {
+          phone: phoneNumber,
+          sessionId: sessionId,
+        },
       },
     });
 
@@ -213,19 +249,10 @@ export async function processReceivedMessage(
     );
 
     if (!contact) {
-      contact = await prisma.whatsAppContact.create({
-        data: {
-          phone: phoneNumber,
-          formattedPhone: from,
-          name: contactName,
-          profilePic: stableAvatar,
-          isGroup: isGroupChat,
-          sessionId,
-          lastMessageAt: lastDate,
-        },
-      });
-      console.log(`✅ Novo contato criado: ${phoneNumber}`);
-    } else {
+      console.log("⚠️ Contato deveria existir mas não foi encontrado.");
+      return;
+    }
+    else {
       await prisma.whatsAppContact.update({
         where: { id: contact.id },
         data: {
@@ -239,7 +266,7 @@ export async function processReceivedMessage(
 
     if (!isGroupChat) {
       const existingLead = await prisma.lead.findFirst({
-        where: { 
+        where: {
           phone: phoneNumber,
           deletedAt: null, // Não considerar leads deletados
         },
@@ -293,14 +320,14 @@ export async function processReceivedMessage(
           type === "image"
             ? "jpg"
             : type === "video"
-            ? "mp4"
-            : type === "audio" || type === "ptt"
-            ? "ogg"
-            : type === "document"
-            ? "pdf"
-            : type === "somethingThatCanBeMp3" // se tiver um caso que de fato gere mp3
-            ? "mp3"
-            : "bin";
+              ? "mp4"
+              : type === "audio" || type === "ptt"
+                ? "ogg"
+                : type === "document"
+                  ? "pdf"
+                  : type === "somethingThatCanBeMp3" // se tiver um caso que de fato gere mp3
+                    ? "mp3"
+                    : "bin";
 
         const cleanMime = normalizeMime(mimetype);
 
@@ -308,9 +335,9 @@ export async function processReceivedMessage(
           cleanMime === "audio/opus"
             ? "audio/ogg"
             : cleanMime ||
-              (fallback === "ogg"
-                ? "audio/ogg"
-                : fallback === "mp3"
+            (fallback === "ogg"
+              ? "audio/ogg"
+              : fallback === "mp3"
                 ? "audio/mpeg"
                 : "");
 
@@ -351,18 +378,27 @@ export async function processReceivedMessage(
       author: author || null,
     };
 
-    await prisma.whatsAppMessage.upsert({
-      where: { messageId },
-      create: messageData,
-      update: {
-        mediaUrl: messageData.mediaUrl ?? undefined,
-        mediaType: messageData.mediaType ?? undefined,
-        fileName: messageData.fileName ?? undefined,
-        caption: messageData.caption ?? undefined,
-        body: messageData.body ?? undefined,
-        timestamp: messageData.timestamp ?? undefined,
-      },
-    });
+try {
+  await prisma.whatsAppMessage.upsert({
+    where: { messageId },
+    create: messageData,
+    update: {
+      body: messageData.body,
+      mediaUrl: messageData.mediaUrl,
+      mediaType: messageData.mediaType,
+      fileName: messageData.fileName,
+      caption: messageData.caption,
+      timestamp: messageData.timestamp,
+    },
+  });
+} catch (error: any) {
+  if (error.code === "P2002") {
+    console.log("⚠️ Mensagem já existe, ignorando:", messageId);
+  } else {
+    throw error;
+  }
+}
+
 
     console.log(`✅ Mensagem salva/atualizada: ${messageId} de ${phoneNumber}`);
   } catch (error) {
@@ -371,7 +407,7 @@ export async function processReceivedMessage(
   } finally {
     try {
       if (message?.id) inFlight.delete(message.id);
-    } catch {}
+    } catch { }
   }
 }
 
@@ -393,11 +429,17 @@ async function processSentMessage(
       console.log('❌ Telefone ausente no evento "sent"');
       return;
     }
-    const formattedPhone = normalizeChatId(`${phoneNumber}@c.us`, sessionId);
+    const formattedPhone = normalizeChatId(`${phoneNumber}@c.us`);
 
-    let contact = await prisma.whatsAppContact.findFirst({
-      where: { phone: phoneNumber, sessionId },
+    let contact = await prisma.whatsAppContact.findUnique({
+      where: {
+        phone_sessionId: {
+          phone: phoneNumber,
+          sessionId: sessionId,
+        },
+      },
     });
+
 
     if (!contact) {
       contact = await prisma.whatsAppContact.create({
@@ -424,12 +466,12 @@ async function processSentMessage(
       typeof message === "string"
         ? message
         : message?.caption ??
-          message?.body ??
-          message?.text ??
-          result?.caption ??
-          result?.body ??
-          result?.text ??
-          null;
+        message?.body ??
+        message?.text ??
+        result?.caption ??
+        result?.body ??
+        result?.text ??
+        null;
 
     // tipo
     const rawType =
@@ -480,12 +522,12 @@ async function processSentMessage(
           type === "video"
             ? "mp4"
             : type === "image"
-            ? "jpg"
-            : type === "audio" || type === "ptt"
-            ? "ogg"
-            : type === "document"
-            ? "pdf"
-            : "bin"
+              ? "jpg"
+              : type === "audio" || type === "ptt"
+                ? "ogg"
+                : type === "document"
+                  ? "pdf"
+                  : "bin"
         );
         fileName = fileName || safeName(`${type}_${Date.now()}.${ext}`);
         mediaUrl = await uploadBase64ToFirebase(
@@ -557,19 +599,19 @@ export async function POST(request: NextRequest) {
 
     const whatsappSession = existing
       ? await prisma.whatsAppSession.update({
-          where: { sessionName: session },
-          data: {
-            connectionStatus: "CONNECTED",
-            lastConnected: new Date(),
-          },
-        })
+        where: { sessionName: session },
+        data: {
+          connectionStatus: "CONNECTED",
+          lastConnected: new Date(),
+        },
+      })
       : await prisma.whatsAppSession.create({
-          data: {
-            sessionName: session,
-            connectionStatus: "CONNECTED",
-            lastConnected: new Date(),
-          },
-        });
+        data: {
+          sessionName: session,
+          connectionStatus: "CONNECTED",
+          lastConnected: new Date(),
+        },
+      });
 
     // cache de avatar (somente no evento "received")
     if (event === "received" && message) {
