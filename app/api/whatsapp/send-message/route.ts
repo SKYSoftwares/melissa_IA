@@ -122,25 +122,35 @@ export async function POST(request: NextRequest) {
             orderBy: { timestamp: 'desc' },
         });
 
-        // Se existir chatId, usa ele; senão, envia pelo número
-        const chatIdToSend = lastMsg?.chatId || contact.phone;
+        // Se existir chatId, usa ele; senão, envia pelo número do contato
+        let chatIdToSend = lastMsg?.chatId || contact.phone;
+
+        if (!chatIdToSend) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: 'Não foi possível determinar chatId ou telefone para envio',
+                },
+                { status: 400 }
+            );
+        }
 
         try {
+            const isLid = chatIdToSend.endsWith?.('@lid') ?? false;
+
             response = await axios.post(
                 `${WHATSAPP_SERVER_URL}/${sessionName}/sendmessage`,
                 {
-                    // Para LID ou chatId existente, enviamos pelo chatId
-                    chatId: chatIdToSend.endsWith('@lid') ? chatIdToSend : undefined,
-                    // Para contatos normais (sem @lid), enviamos pelo telnumber
-                    telnumber: chatIdToSend.endsWith('@lid') ? undefined : chatIdToSend,
+                    chatId: isLid ? chatIdToSend : undefined,
+                    telnumber: isLid ? undefined : chatIdToSend,
                     message: text,
                 },
                 { timeout: 30000 }
             );
 
             console.log("✅ Mensagem enviada com payload:", {
-                chatId: chatIdToSend.endsWith('@lid') ? chatIdToSend : undefined,
-                telnumber: chatIdToSend.endsWith('@lid') ? undefined : chatIdToSend,
+                chatId: isLid ? chatIdToSend : undefined,
+                telnumber: isLid ? undefined : chatIdToSend,
             });
         } catch (err: any) {
             console.error("❌ Erro ao enviar mensagem:", err.message || err);
