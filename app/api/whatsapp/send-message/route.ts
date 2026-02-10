@@ -114,55 +114,19 @@ export async function POST(request: NextRequest) {
         }
         console.log("Número enviado ao WPP:", contact.phone);
 
-        let response;
+        const chatIdToSend = contact.phone;
+        const isLid = chatIdToSend.endsWith('@lid');
 
-        // Pega chatId do banco, se existir
-        const lastMsg = await prisma.whatsAppMessage.findFirst({
-            where: { contactId: contact.id },
-            orderBy: { timestamp: 'desc' },
-        });
-
-        // Se existir chatId, usa ele; senão, envia pelo número do contato
-        let chatIdToSend = lastMsg?.chatId || contact.phone;
-
-        if (!chatIdToSend) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Não foi possível determinar chatId ou telefone para envio',
-                },
-                { status: 400 }
-            );
-        }
-
-        try {
-            const isLid = chatIdToSend.endsWith?.('@lid') ?? false;
-
-            response = await axios.post(
-                `${WHATSAPP_SERVER_URL}/${sessionName}/sendmessage`,
-                {
-                    chatId: isLid ? chatIdToSend : undefined,
-                    telnumber: isLid ? undefined : chatIdToSend,
-                    message: text,
-                },
-                { timeout: 30000 }
-            );
-
-            console.log("✅ Mensagem enviada com payload:", {
+        // Envia a mensagem diretamente
+        const response = await axios.post(
+            `${WHATSAPP_SERVER_URL}/${sessionName}/sendmessage`,
+            {
                 chatId: isLid ? chatIdToSend : undefined,
                 telnumber: isLid ? undefined : chatIdToSend,
-            });
-        } catch (err: any) {
-            console.error("❌ Erro ao enviar mensagem:", err.message || err);
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: "Falha no envio da mensagem",
-                    details: err.response?.data || err.message,
-                },
-                { status: 500 }
-            );
-        }
+                message: text,
+            },
+            { timeout: 30000 }
+        );
 
         const result = response.data;
 
