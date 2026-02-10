@@ -113,37 +113,49 @@ export async function POST(request: NextRequest) {
             );
         }
         console.log("Número enviado ao WPP:", contact.phone);
+
         let response;
 
         // Pega chatId do banco, se existir
-        let chatIdLid: string | null = null;
-
         const lastMsg = await prisma.whatsAppMessage.findFirst({
             where: { contactId: contact.id },
             orderBy: { timestamp: 'desc' },
         });
 
-        if (lastMsg?.chatId && lastMsg.chatId.endsWith('@lid')) {
-            chatIdLid = lastMsg.chatId;
-        }
+        // Se existir chatId, usa ele; senão, envia pelo número
+        const chatIdToSend = lastMsg?.chatId || contact.phone;
 
-        if (chatIdLid) {
-            response = await axios.post(
-                `${WHATSAPP_SERVER_URL}/${sessionName}/sendText`,
-                { chatId: chatIdLid, text },
-                { timeout: 30000 }
-            );
-        } else {
+        try {
             response = await axios.post(
                 `${WHATSAPP_SERVER_URL}/${sessionName}/sendmessage`,
-                { telnumber: contact.phone, message: text },
+                {
+                    // Para LID ou chatId existente, enviamos pelo chatId
+                    chatId: chatIdToSend.endsWith('@lid') ? chatIdToSend : undefined,
+                    // Para contatos normais (sem @lid), enviamos pelo telnumber
+                    telnumber: chatIdToSend.endsWith('@lid') ? undefined : chatIdToSend,
+                    message: text,
+                },
                 { timeout: 30000 }
+            );
+
+            console.log("✅ Mensagem enviada com payload:", {
+                chatId: chatIdToSend.endsWith('@lid') ? chatIdToSend : undefined,
+                telnumber: chatIdToSend.endsWith('@lid') ? undefined : chatIdToSend,
+            });
+        } catch (err: any) {
+            console.error("❌ Erro ao enviar mensagem:", err.message || err);
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: "Falha no envio da mensagem",
+                    details: err.response?.data || err.message,
+                },
+                { status: 500 }
             );
         }
 
-        console.log(response);
-
         const result = response.data;
+
 
         console.log(contact?.phone, 'phone');
         if (result.status) {
