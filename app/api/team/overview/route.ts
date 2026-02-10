@@ -13,6 +13,7 @@ export async function GET() {
     });
     const totalMembers = await prisma.user.count();
 
+    
     return NextResponse.json({
       totalTeams,
       totalManagers,
