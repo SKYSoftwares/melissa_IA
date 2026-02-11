@@ -17,9 +17,15 @@ export async function POST(request: NextRequest) {
 
         // Caso 2: É WhatsApp ID
         let cleanPhone = '';
+        let originalJid = '';
 
         if (!isUUID) {
-            cleanPhone = contactId.split('@')[0].replace(/\D/g, '');
+            if (contactId.includes('@')) {
+                originalJid = contactId; // mantém @lid
+                cleanPhone = contactId.split('@')[0].replace(/\D/g, '');
+            } else {
+                cleanPhone = contactId.replace(/\D/g, '');
+            }
         }
 
         if (!contactId || !text || !sessionName) {
@@ -114,22 +120,26 @@ export async function POST(request: NextRequest) {
         }
         console.log("Número enviado ao WPP:", contact.phone);
 
-        const chatIdToSend = contact.phone;
-        const isLid = chatIdToSend.endsWith('@lid');
+        let chatIdToSend = contact.phone;
 
-        // Envia a mensagem diretamente
+        // Se quem chamou a API já enviou um JID válido, usa ele
+        if (!isUUID && contactId.includes('@')) {
+            chatIdToSend = contactId;
+        }
+
+        const isJid = chatIdToSend.includes('@');
+
         const response = await axios.post(
             `${WHATSAPP_SERVER_URL}/${sessionName}/sendmessage`,
             {
-                chatId: isLid ? chatIdToSend : undefined,
-                telnumber: isLid ? undefined : chatIdToSend,
+                chatId: isJid ? chatIdToSend : undefined,
+                telnumber: isJid ? undefined : chatIdToSend,
                 message: text,
             },
             { timeout: 30000 }
         );
 
         const result = response.data;
-
 
         console.log(contact?.phone, 'phone');
         if (result.status) {
