@@ -132,8 +132,7 @@ export async function POST(request: NextRequest) {
         const response = await axios.post(
             `${WHATSAPP_SERVER_URL}/${sessionName}/sendmessage`,
             {
-                chatId: isJid ? chatIdToSend : undefined,
-                telnumber: isJid ? undefined : chatIdToSend,
+                telnumber: chatIdToSend,
                 message: text,
             },
             { timeout: 30000 }
