@@ -155,6 +155,7 @@ export async function PUT(req: NextRequest) {
       });
     }
 
+    
     return NextResponse.json(config);
   } catch (error) {
     console.error("Erro ao salvar configurações da IA:", error);
