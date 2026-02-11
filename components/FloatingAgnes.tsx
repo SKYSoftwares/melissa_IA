@@ -71,7 +71,7 @@ export default function FloatingAgnes() {
         >
           <div className="flex items-center gap-2">
             <Sparkles className="h-3 w-3" />
-            Agnes - IA Assistente
+            Melissa - IA Assistente
           </div>
           <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
         </div>
@@ -104,7 +104,7 @@ export default function FloatingAgnes() {
                 </div>
                 <div>
                   <DialogTitle className="text-xl font-bold">
-                    Agnes - IA Assistente
+                    Melissa - IA Assistente
                   </DialogTitle>
                   <p className="text-sm opacity-90 mt-1">
                     Sua assistente inteligente para WhatsApp

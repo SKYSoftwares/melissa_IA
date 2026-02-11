@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
             {
               role: "system",
               content:
-                "Você é Agnes, uma assistente IA especializada em atendimento ao cliente e vendas. Responda de forma clara, concisa e útil.",
+                "Você é Melissa, uma assistente IA especializada em atendimento ao cliente e vendas. Responda de forma clara, concisa e útil.",
             },
             {
               role: "user",

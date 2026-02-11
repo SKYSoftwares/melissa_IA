@@ -553,7 +553,7 @@ model LeadFile {
 model AIConfig {
   id                  String   @id @default(cuid())
   userId              String?  @unique
-  assistantName       String   @default("Agnes")
+  assistantName       String   @default("Melissa")
   assistantRole       String   @default("assistente virtual")
   assistantTeam       String   @default("equipe do Dr. Marcelo")
   assistantContext    String   @db.Text

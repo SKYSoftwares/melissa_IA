@@ -250,7 +250,7 @@ export default function OptimizedAgnesChat() {
               </div>
               <div>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  Agnes — Assistente IA
+                  Melissa — Assistente IA
                   <Sparkles className="h-4 w-4 text-purple-500" />
                 </CardTitle>
                 <p className="text-xs text-muted-foreground">

@@ -62,7 +62,7 @@ export async function GET() {
       messageId: message.id,
       runId: run.id,
       retrievedStatus: retrievedRun.status,
-      message: "Debug Agnes completo com sucesso"
+      message: "Debug Melissa completo com sucesso"
     });
     
   } catch (error: any) {

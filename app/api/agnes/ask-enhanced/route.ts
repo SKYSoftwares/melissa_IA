@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log("🤖 Agnes Enhanced - Processando pergunta:", question);
+    console.log("🤖 Melissa Enhanced - Processando pergunta:", question);
     console.log("📚 Vector Store ID:", VECTOR_STORE_ID);
 
     let answer = "";
@@ -179,7 +179,7 @@ export async function POST(req: NextRequest) {
           messages: [
             {
               role: "system",
-              content: `Você é Agnes, a assistente IA da Dr. Zeus Capital. 
+              content: `Você é Melissa, a assistente IA da Melissa IA. 
               
               Você tem acesso ao conhecimento específico da empresa sobre:
               - Home Equity
@@ -219,7 +219,7 @@ export async function POST(req: NextRequest) {
         messages: [
           {
             role: "system",
-            content: `Você é Agnes, assistente IA da Dr. Zeus Capital. 
+            content: `Você é Melissa, assistente IA da Melissa IA. 
               
               Você é especializada em:
               - Home Equity (empréstimo com garantia imobiliária)
@@ -267,7 +267,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (err: any) {
     console.error(
-      "❌ Erro na API Enhanced da Agnes:",
+      "❌ Erro na API Enhanced da Melissa:",
       err?.response?.data ?? err
     );
     return NextResponse.json(

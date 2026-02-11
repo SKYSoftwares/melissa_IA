@@ -149,7 +149,7 @@ export default function AIConfigPage() {
                         Configurações da IA
                     </h2>
                     <p className="text-muted-foreground mt-1">
-                        Configure o comportamento e as respostas da assistente virtual Agnes
+                        Configure o comportamento e as respostas da assistente virtual Melissa
                     </p>
                 </div>
                 <Button onClick={handleSave} disabled={saving}>
@@ -183,7 +183,7 @@ export default function AIConfigPage() {
                                 id="assistantName"
                                 value={config.assistantName}
                                 onChange={(e) => handleChange('assistantName', e.target.value)}
-                                placeholder="Ex: Agnes"
+                                placeholder="Ex: Melissa"
                             />
                         </div>
 
@@ -224,7 +224,7 @@ export default function AIConfigPage() {
                                 id="greetingMessage"
                                 value={config.greetingMessage}
                                 onChange={(e) => handleChange('greetingMessage', e.target.value)}
-                                placeholder="Ex: Olá! Eu me chamo Agnes😊, faço parte da equipe do Dr. Marcelo. Como posso te ajudar hoje?"
+                                placeholder="Ex: Olá! Eu me chamo Melissa😊, faço parte da equipe do Dr. Marcelo. Como posso te ajudar hoje?"
                                 rows={4}
                             />
                         </div>

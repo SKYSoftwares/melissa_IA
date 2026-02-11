@@ -124,7 +124,7 @@ export default function AgnesChat() {
               </div>
               <div>
                 <CardTitle className="text-lg">
-                  Agnes — Assistente de Conhecimento
+                  Melissa — Assistente de Conhecimento
                 </CardTitle>
                 <p className="text-xs text-muted-foreground">
                   Respostas com base na documentação em PDF

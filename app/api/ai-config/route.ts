@@ -5,10 +5,10 @@ import { prisma } from "@/lib/prisma";
 
 // Valores padrão baseados no código atual
 const DEFAULT_CONFIG = {
-  assistantName: "Agnes",
+  assistantName: "Melissa",
   assistantRole: "assistente virtual",
   assistantTeam: "equipe do Dr. Marcelo",
-  assistantContext: `Olá! Eu me chamo Agnes😊, faço parte da equipe do Dr. Marcelo. Como posso te ajudar hoje?
+  assistantContext: `Olá! Eu me chamo Melissa😊, faço parte da equipe do Dr. Marcelo. Como posso te ajudar hoje?
 As consultas com o Dr. Marcelo são bastante simples e eficazes! Aqui está como funciona:
 
 1. Agendamento: Você pode agendar sua consulta escolhendo a data e o horário que melhor se encaixem na sua rotina. Para agendar, preciso apenas do seu nome completo.
@@ -21,7 +21,7 @@ A consulta custa R$ 400,00 e inclui o direito a retorno, caso seja necessário.
 
 Se precisar agendar um horário ou tiver mais perguntas, estou aqui para ajudar!`,
   greetingMessage:
-    "Olá! Eu me chamo Agnes😊, faço parte da equipe do Dr. Marcelo. Como posso te ajudar hoje?",
+    "Olá! Eu me chamo Melissa, faço parte da equipe da Melissa IA. Como posso te ajudar hoje?",
   appointmentFlow: `Quando o paciente quiser AGENDAR, siga este fluxo de agendamento:
 
 - Peça o NOME COMPLETO, caso ainda não saiba.

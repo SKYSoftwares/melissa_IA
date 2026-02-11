@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log("🧠 Agnes Smart - Processando pergunta:", question);
+    console.log("🧠 Melissa Smart - Processando pergunta:", question);
     console.log("📚 Vector Store ID:", VECTOR_STORE_ID);
 
     // Buscar histórico recente para contexto
@@ -218,7 +218,7 @@ export async function POST(req: NextRequest) {
           messages: [
             {
               role: "system",
-              content: `Você é Agnes, a assistente IA da Dr. Zeus Capital. 
+              content: `Você é Melissa, a assistente IA da Melissa IA. 
               
               ${greeting}! Sou sua assistente especializada em produtos financeiros.
               
@@ -267,7 +267,7 @@ export async function POST(req: NextRequest) {
         messages: [
           {
             role: "system",
-            content: `Você é Agnes, assistente IA da Dr. Zeus Capital. 
+            content: `Você é Melissa, assistente IA da Melissa IA. 
               
               Você é especializada em:
               - Home Equity (empréstimo com garantia imobiliária)
@@ -317,7 +317,7 @@ export async function POST(req: NextRequest) {
       context: recentHistory.length > 0 ? "conversation" : "new",
     });
   } catch (err: any) {
-    console.error("❌ Erro na API Smart da Agnes:", err?.response?.data ?? err);
+    console.error("❌ Erro na API Smart da Melissa:", err?.response?.data ?? err);
     return NextResponse.json(
       {
         error: err?.message ?? "Erro interno do servidor",

@@ -22,16 +22,16 @@ const VECTOR_STORE_ID = process.env.VECTOR_STORE_ID;
 const ASSISTANT_ID = process.env.ASSISTANT_ID;
 const ALLOW_PUBLIC = process.env.ALLOW_PUBLIC_AGNES === "1";
 
-if (!OPENAI_API_KEY) console.warn("[Agnes] OPENAI_API_KEY não configurada.");
-if (!VECTOR_STORE_ID) console.warn("[Agnes] VECTOR_STORE_ID não configurado.");
-if (!ASSISTANT_ID) console.warn("[Agnes] ASSISTANT_ID não configurado.");
+if (!OPENAI_API_KEY) console.warn("[Melissa] OPENAI_API_KEY não configurada.");
+if (!VECTOR_STORE_ID) console.warn("[Melissa] VECTOR_STORE_ID não configurado.");
+if (!ASSISTANT_ID) console.warn("[Melissa] ASSISTANT_ID não configurado.");
 
 const client = OPENAI_API_KEY ? new OpenAI({ apiKey: OPENAI_API_KEY }) : null;
 
 /* ========================= CONTEXTO FIXO (PRIMER) ========================= */
 
 const PLATFORM_PRIMER = `
-Você é **Agnes**, IA do **Melissa IA**.
+Você é **Melissa**, IA do **Melissa IA**.
 
 MISSÃO
 - Explicar, orientar e qualificar leads com precisão e transparência.
@@ -266,7 +266,7 @@ export async function POST(req: NextRequest) {
     /* ---------- ESTRATÉGIA 1: Assistants + Vector Store ---------- */
     if (ASSISTANT_ID && VECTOR_STORE_ID) {
       try {
-        console.log("[Agnes] Assistants + Vector Store...");
+        console.log("[Melissa] Assistants + Vector Store...");
 
         // 1) Thread
         const thread = await client.beta.threads.create();
@@ -304,7 +304,7 @@ export async function POST(req: NextRequest) {
             thread_id: thread.id,
           });
           status = r2.status;
-          console.log(`[Agnes] Run status: ${status}`);
+          console.log(`[Melissa] Run status: ${status}`);
         }
 
         if (status === "completed") {

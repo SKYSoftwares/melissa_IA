@@ -48,11 +48,11 @@ export async function GET() {
       messageId: message.id,
       runId: run.id,
       retrievedStatus: retrievedRun.status,
-      message: "Teste Agnes básico completo com sucesso"
+      message: "Teste Melissa básico completo com sucesso"
     });
     
   } catch (error: any) {
-    console.error("=== ERRO NO TESTE AGNES BÁSICO ===");
+    console.error("=== ERRO NO TESTE Melissa BÁSICO ===");
     console.error("Error:", error.message);
     console.error("Stack:", error.stack);
     
@@ -60,7 +60,7 @@ export async function GET() {
       success: false,
       error: error.message,
       stack: error.stack,
-      message: "Erro no teste Agnes básico"
+      message: "Erro no teste Melissa básico"
     }, { status: 500 });
   }
 } 
