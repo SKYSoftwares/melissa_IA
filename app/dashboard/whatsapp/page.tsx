@@ -32,7 +32,7 @@ const WhatsAppChats = () => {
   const [sending, setSending] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const { data: session } = useSession();
-  const [aiMode, setAiMode] = useState(false);
+  const [aiMode, setAiMode] = useState(true);
 
   const lastAiHandledMessageRef = useRef<string | null>(null);
 
