@@ -269,8 +269,8 @@ export default function ConexoesPage() {
   };
 
   const WHATSAPP_EXTERNAL_API = "https://wpp.melissaia.com.br";
-  
-  
+
+
   const loadWhatsAppSessions = async () => {
     try {
       const response = await fetch("/api/whatsapp/sessions");
@@ -479,51 +479,52 @@ export default function ConexoesPage() {
     }
   };
 
-  const checkSessionStatusOnCreate = async (sessionName: string) => {
+const checkSessionStatusOnCreate = async (sessionName: string) => {
+  try {
+    const url = `${WHATSAPP_EXTERNAL_API}/${sessionName}/status`;
+    const response = await fetch(url);
+    const text = await response.text();
+
+    let data: any;
     try {
-      const url = `${WHATSAPP_EXTERNAL_API}/${sessionName}/status`;
-      const response = await fetch(url);
-      const text = await response.text();
+      data = JSON.parse(text);
+    } catch {
+      throw new Error(`Resposta não é JSON: ${text.slice(0, 200)}`);
+    }
 
-      let data: any;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        throw new Error(`Resposta não é JSON: ${text.slice(0, 200)}`);
-      }
-
-      if (data.message === "Sessão não encontrada") {
-        setConnectionStatus("DISCONNECTED");
-        await updateSessionStatus(sessionName, "DISCONNECTED");
-        return;
-      }
-
-      if (data.status) {
-        setConnectionStatus(data.connectionState);
-
-        if (data.connectionState !== "CONNECTED") {
-          await updateSessionStatus(sessionName, data.connectionState);
-        }
-
-        if (data.connectionState === "QR_CODE") {
-          await getQrCode(sessionName);
-        } else if (data.connectionState === "CONNECTED") {
-          await updateSessionStatus(
-            sessionName,
-            data.connectionState,
-            undefined,
-            data.numberInfo || null
-          );
-        } else if (data.connectionState === "CREATING") {
-          setTimeout(() => checkSessionStatusOnCreate(sessionName), 2000);
-        }
-      }
-    } catch (error) {
-      console.error("Erro ao verificar status:", error);
+    if (data.message === "Sessão não encontrada") {
       setConnectionStatus("DISCONNECTED");
       await updateSessionStatus(sessionName, "DISCONNECTED");
+      return;
     }
-  };
+
+    if (data.status) {
+      setConnectionStatus(data.connectionState);
+
+      if (data.connectionState !== "CONNECTED") {
+        await updateSessionStatus(sessionName, data.connectionState);
+      }
+
+      if (data.connectionState === "QR_CODE") {
+        await getQrCode(sessionName);
+      } else if (data.connectionState === "CONNECTED") {
+        await updateSessionStatus(
+          sessionName,
+          data.connectionState,
+          undefined,
+          data.numberInfo || null
+        );
+      } else if (data.connectionState === "CREATING") {
+        // Reduzido de 2000ms para 1000ms
+        setTimeout(() => checkSessionStatusOnCreate(sessionName), 1000);
+      }
+    }
+  } catch (error) {
+    console.error("Erro ao verificar status:", error);
+    setConnectionStatus("DISCONNECTED");
+    await updateSessionStatus(sessionName, "DISCONNECTED");
+  }
+};
 
   const getQrCode = async (sessionName: string) => {
     try {
@@ -605,11 +606,24 @@ export default function ConexoesPage() {
 
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined;
-    if (isQrModalOpen && connectionStatus === "QR_CODE") {
-      interval = setInterval(checkConnectionStatus, 5000);
+    let timeout: NodeJS.Timeout | undefined;
+    const maxWaitTime = 60000; // 1 minuto máximo de espera
+
+    if (isQrModalOpen && (connectionStatus === "QR_CODE" || connectionStatus === "CREATING")) {
+      // Polling mais frequente: 1 segundo (em vez de 5)
+      interval = setInterval(checkConnectionStatus, 1000);
+
+      // Timeout para cancelar se demorar demais
+      timeout = setTimeout(() => {
+        if (interval) clearInterval(interval);
+        setConnectionStatus("TIMEOUT");
+        toast.error("Timeout ao aguardar QR Code. Tente novamente.");
+      }, maxWaitTime);
     }
+
     return () => {
       if (interval) clearInterval(interval);
+      if (timeout) clearTimeout(timeout);
     };
   }, [isQrModalOpen, connectionStatus]);
 
@@ -899,17 +913,17 @@ export default function ConexoesPage() {
                             session.connectionStatus === "CONNECTED"
                               ? "default"
                               : session.connectionStatus === "QR_CODE"
-                              ? "secondary"
-                              : "destructive"
+                                ? "secondary"
+                                : "destructive"
                           }
                         >
                           {session.connectionStatus === "CONNECTED"
                             ? "Conectado"
                             : session.connectionStatus === "QR_CODE"
-                            ? "QR Code"
-                            : session.connectionStatus === "CREATING"
-                            ? "Criando"
-                            : "Desconectado"}
+                              ? "QR Code"
+                              : session.connectionStatus === "CREATING"
+                                ? "Criando"
+                                : "Desconectado"}
                         </Badge>
                       </CardHeader>
                       <CardContent>
@@ -923,8 +937,8 @@ export default function ConexoesPage() {
                           <p className="text-xs text-muted-foreground">
                             {session.lastConnected
                               ? `Conectado em: ${new Date(
-                                  session.lastConnected
-                                ).toLocaleString()}`
+                                session.lastConnected
+                              ).toLocaleString()}`
                               : "Nunca conectado"}
                           </p>
                           <div className="flex flex-wrap gap-2 pt-2">
@@ -1028,7 +1042,7 @@ export default function ConexoesPage() {
                         <div className="space-y-2">
                           <p className="text-sm text-muted-foreground">
                             {connection.type === "whatsapp" ||
-                            connection.type === "sms"
+                              connection.type === "sms"
                               ? connection.phone
                               : connection.email}
                           </p>
@@ -1146,7 +1160,7 @@ export default function ConexoesPage() {
                           <p className="text-sm text-muted-foreground">
                             {template.messages.length > 0
                               ? template.messages[0].text?.substring(0, 50) +
-                                "..."
+                              "..."
                               : "Sem mensagens"}
                           </p>
                           <p className="text-xs text-muted-foreground">
@@ -1649,12 +1663,12 @@ export default function ConexoesPage() {
                       sessionName: selectedSessionName,
                       scheduledAt: scheduledAt
                         ? (() => {
-                            const scheduleDate =
-                              createLocalScheduleDateTime(scheduledAt);
-                            return scheduleDate
-                              ? toISOString(scheduleDate)
-                              : null;
-                          })()
+                          const scheduleDate =
+                            createLocalScheduleDateTime(scheduledAt);
+                          return scheduleDate
+                            ? toISOString(scheduleDate)
+                            : null;
+                        })()
                         : null,
                       delay: customDelay * 1000,
                       contactDelay: customContactDelay * 1000,
