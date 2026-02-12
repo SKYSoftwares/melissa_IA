@@ -96,7 +96,7 @@ export default function LoginPage() {
 
     React.useEffect(() => {
         if (session) {
-            router.push('/dashboard');
+            router.push('/dashboard/conexoes');
         }
     }, [session, router]);
 
@@ -159,7 +159,7 @@ export default function LoginPage() {
                 title: 'Sucesso',
                 description: 'Login realizado com sucesso!',
             });
-            router.push('/dashboard');
+            router.push('/dashboard/conexoes');
         } catch {
             toast({
                 title: 'Erro',

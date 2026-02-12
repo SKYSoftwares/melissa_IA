@@ -1435,7 +1435,7 @@ export default function LeadsPage() {
     };
 
     return (
-        <div className="flex-1 space-y-6 p-8 pt-6 bg-gray-50 min-h-screen">
+        <div className="flex-1 space-y-6 p-8 pt-6 bg-gray-50 h-full">
             {/* Modal de Follow Up */}
             <Dialog
                 open={showFollowUpModal}

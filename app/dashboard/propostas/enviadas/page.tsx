@@ -60,8 +60,13 @@ export default function PropostasEnviadasPage() {
     fetchPropostas();
   }, [user]);
 
-  if (!user || (user.role && user.role.toLowerCase() === "administrador"))
-    return null;
+if (!session) {
+  return <div className="p-8">Carregando sessão...</div>;
+}
+
+if (session.user?.role?.toLowerCase() === "administrador") {
+  return <div className="p-8">Acesso não permitido.</div>;
+}
 
   return (
     <div className="flex-1 space-y-6 p-8 pt-6 bg-gray-50 min-h-screen">

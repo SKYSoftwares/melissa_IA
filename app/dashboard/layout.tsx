@@ -11,7 +11,7 @@ export default function DashboardLayout({
 }) {
   return (
     <NextAuthProtectedRoute>
-      <SidebarProvider defaultOpen={true}>
+      <SidebarProvider open={true}>
         <AppSidebar />
         <SidebarInset>
           <HeaderNav />

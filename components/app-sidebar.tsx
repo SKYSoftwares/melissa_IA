@@ -54,8 +54,7 @@ const menuGroups: MenuGroup[] = [
   {
     label: "Meu Dia",
     items: [
-      { title: "Painel Geral", url: "/dashboard/dashboard", icon: Home },
-      { title: "Agenda", url: "/dashboard/agenda", icon: Calendar },
+      { title: "Conexões", url: "/dashboard/conexoes", icon: Link2 },
       {
         title: "Mensagens",
         url: "/dashboard/whatsapp",
@@ -63,6 +62,7 @@ const menuGroups: MenuGroup[] = [
         badge: null,
         permissao: "whatsapp",
       },
+            { title: "Agenda", url: "/dashboard/agenda", icon: Calendar },
     ],
   },
   {
@@ -86,7 +86,8 @@ const menuGroups: MenuGroup[] = [
         icon: Send,
         permissao: "campanhas",
       },
-      { title: "Conexões", url: "/dashboard/conexoes", icon: Link2 },
+      { title: "Relatorios", url: "/dashboard/dashboard", icon: Home },
+
     ],
   },
   {
@@ -217,7 +218,7 @@ export function AppSidebar() {
       initial={false}
       animate={{ width: collapsed ? 72 : 260 }}
       transition={{ duration: 0.2 }}
-      className="sticky top-0 flex h-screen flex-col border-r bg-white shadow-sm"
+className="flex h-screen shrink-0 flex-col border-r bg-white shadow-sm !translate-x-0 !opacity-100"
     >
       {/* HEADER */}
       <SidebarHeader className="px-4 py-4 flex items-center gap-3">
@@ -336,8 +337,8 @@ export function AppSidebar() {
             "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-sky-500 hover:bg-sky-50 transition",
             collapsed && "justify-center"
           )}
-        > 
-        
+        >
+
           <ChevronLeft
             className={cn(
               "h-4 w-4 transition-transform",

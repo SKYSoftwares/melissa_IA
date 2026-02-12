@@ -23,16 +23,7 @@ export function HeaderNav() {
         return (
             <header className="top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <div className="container flex h-14 items-center justify-between px-4">
-                    <div className="flex items-center space-x-4">
-                        {/* Botão de toggle do sidebar - visível apenas no mobile */}
-                        <SidebarTrigger className="md:hidden" />
-                        <div className="md:hidden h-8 w-8 rounded-full overflow-hidden">
-                            <img
-                                src="/images/zeus-capital-logo.png"
-                                alt="Melissa IA"
-                                className="h-full w-full object-cover"
-                            />
-                        </div>
+                    <div className="flex items-center space-x-4">                        
                         <div className="relative hidden md:block">
                             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
@@ -61,15 +52,7 @@ export function HeaderNav() {
         <header className="top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="container flex h-14 items-center justify-between px-4">
                 <div className="flex items-center space-x-4">
-                    {/* Botão de toggle do sidebar - visível apenas no mobile */}
-                    <SidebarTrigger className="md:hidden" />
-                    <div className="md:hidden h-8 w-8 rounded-full overflow-hidden">
-                        <img
-                            src="/images/zeus-capital-logo.png"
-                            alt="Melissa Ia"
-                            className="h-full w-full object-cover"
-                        />
-                    </div>
+                    
                     <div className="relative hidden md:block">
                         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
