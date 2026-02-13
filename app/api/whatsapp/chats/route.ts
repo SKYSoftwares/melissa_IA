@@ -26,28 +26,38 @@ export async function GET(request: NextRequest) {
         const showArchived = searchParams.get('showArchived') === 'true';
 
         // console.log("📋 [whatsapp/chats] showArchived:", showArchived);
+        // 1️⃣ Pegar todas as sessões do usuário
+        const userSessions = await prisma.whatsAppSession.findMany({
+            where: { userId },
+            select: { id: true },
+        });
+        const sessionIds = userSessions.map(s => s.id);
 
-        // Busca mensagens apenas das sessões vinculadas a esse usuário
-        // ORDENAÇÃO CRONOLÓGICA: ordenar APENAS por timestamp (data de chegada)
-        // para exibir todas as conversas por ordem de chegada, independentemente da conexão
-        const lastMessages = await prisma.whatsAppMessage.findMany({
-            orderBy: [{ timestamp: 'desc' }], // 👈 Ordenar APENAS por data de chegada
-            distinct: ['chatId'],
+        // 2️⃣ Buscar mensagens apenas dessas sessões
+        const messagesOfUser = await prisma.whatsAppMessage.findMany({
             where: {
-                session: {
-                    userId, // <-- filtro pelo dono da sessão
-                },
-                archived: showArchived, // <-- se showArchived=true, busca arquivadas; se false, busca não arquivadas
+                sessionId: { in: sessionIds },
+                archived: showArchived,
             },
+            orderBy: { timestamp: 'desc' },
             include: {
                 contact: {
-                    include: {
-                        session: true,
-                        tags: { include: { tag: true } },
-                    },
+                    include: { session: true, tags: { include: { tag: true } } },
                 },
+                session: { select: { sessionName: true } },
             },
         });
+
+        // Agrupar mensagens por chatId e pegar a mais recente
+        const lastMessagesMap = new Map<string, typeof messagesOfUser[0]>();
+
+        for (const msg of messagesOfUser) {
+            if (!lastMessagesMap.has(msg.chatId)) {
+                lastMessagesMap.set(msg.chatId, msg);
+            }
+        }
+
+        const lastMessages = Array.from(lastMessagesMap.values());
 
         async function getChats() {
             return Promise.all(
