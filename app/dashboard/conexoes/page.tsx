@@ -516,7 +516,7 @@ const checkSessionStatusOnCreate = async (sessionName: string) => {
         );
       } else if (data.connectionState === "CREATING") {
         // Reduzido de 2000ms para 1000ms
-        setTimeout(() => checkSessionStatusOnCreate(sessionName), 1000);
+        setTimeout(() => checkSessionStatusOnCreate(sessionName), 500);
       }
     }
   } catch (error) {
@@ -607,7 +607,7 @@ const checkSessionStatusOnCreate = async (sessionName: string) => {
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined;
     let timeout: NodeJS.Timeout | undefined;
-    const maxWaitTime = 60000; // 1 minuto máximo de espera
+    const maxWaitTime = 20000; // 20 segundos
 
     if (isQrModalOpen && (connectionStatus === "QR_CODE" || connectionStatus === "CREATING")) {
       // Polling mais frequente: 1 segundo (em vez de 5)
