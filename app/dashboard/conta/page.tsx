@@ -44,9 +44,9 @@ export default function ContaPage() {
             </div>
 
             <Tabs defaultValue="settings" className="space-y-4">
-                <TabsList>
+                {/* <TabsList>
                     <TabsTrigger value="settings">Configurações</TabsTrigger>
-                </TabsList>
+                </TabsList> */}
 
                 <ConfiguracoesTab user={user} />
             </Tabs>

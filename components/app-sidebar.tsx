@@ -69,12 +69,12 @@ const menuGroups: MenuGroup[] = [
     label: "Pacientes",
     items: [
       { title: "Contatos & Leads", url: "/dashboard/leads", icon: Users },
-      {
-        title: "Propostas",
-        url: "/dashboard/propostas/enviadas",
-        icon: FileText,
-        permissao: "propostas_enviadas",
-      },
+      // {
+      //   title: "Propostas",
+      //   url: "/dashboard/propostas/enviadas",
+      //   icon: FileText,
+      //   permissao: "propostas_enviadas",
+      // },
     ],
   },
   {

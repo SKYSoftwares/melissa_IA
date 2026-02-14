@@ -417,15 +417,38 @@ export async function PUT(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
     try {
         const { id } = await req.json();
+
         if (!id) {
             return NextResponse.json(
                 { error: 'ID não informado.' },
                 { status: 400 }
             );
         }
-        await prisma.team.delete({ where: { id } });
+
+        // 1️⃣ Deletar permissões
+        await prisma.teamPermission.deleteMany({
+            where: { teamId: id },
+        });
+
+        // 2️⃣ Se for gerente/diretor, remover vínculos
+        await prisma.teamGroup.deleteMany({
+            where: { managerId: id },
+        });
+
+        // 3️⃣ Remover vínculo de diretor dos gerentes
+        await prisma.team.updateMany({
+            where: { directorId: id },
+            data: { directorId: null },
+        });
+
+        // 4️⃣ Agora sim deletar o membro
+        await prisma.team.delete({
+            where: { id },
+        });
+
         return NextResponse.json({ success: true }, { status: 200 });
     } catch (error) {
+        console.error(error);
         return NextResponse.json(
             { error: 'Erro ao excluir membro', details: String(error) },
             { status: 500 }

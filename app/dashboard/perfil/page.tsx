@@ -82,7 +82,7 @@ export default function PerfilPage() {
     <div className="flex-1 space-y-6 p-8 pt-6 bg-gray-50 min-h-screen">
       {/* Header */}
       <div className="flex items-center space-x-4">
-        <Link href="/dashboard">
+        <Link href="/dashboard/conexoes">
           <Button variant="outline" size="sm">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar
