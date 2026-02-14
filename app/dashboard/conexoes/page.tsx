@@ -576,12 +576,12 @@ const checkSessionStatusOnCreate = async (sessionName: string) => {
     }
   };
 
-  const handleOpenQrModal = async (sessionName: string) => {
-    setIsQrModalOpen(true);
-    setQrCodeData(null);
-    setConnectionStatus("");
-    await createSession(sessionName);
-  };
+const handleOpenQrModal = async (sessionName: string) => {
+  setIsQrModalOpen(true);
+  setQrCodeData(null);
+  setConnectionStatus("CREATING"); // 🔥 importante
+  await createSession(sessionName);
+};
 
   const handleCreateNewConnection = async (sessionName: string) => {
     if (!sessionName.trim()) {
@@ -605,27 +605,23 @@ const checkSessionStatusOnCreate = async (sessionName: string) => {
   };
 
   useEffect(() => {
-    let interval: NodeJS.Timeout | undefined;
-    let timeout: NodeJS.Timeout | undefined;
-    const maxWaitTime = 20000; // 20 segundos
+  if (!isQrModalOpen || !sessionId) return;
 
-    if (isQrModalOpen && (connectionStatus === "QR_CODE" || connectionStatus === "CREATING")) {
-      // Polling mais frequente: 1 segundo (em vez de 5)
-      interval = setInterval(checkConnectionStatus, 1000);
+  const interval = setInterval(() => {
+    checkConnectionStatus();
+  }, 1000);
 
-      // Timeout para cancelar se demorar demais
-      timeout = setTimeout(() => {
-        if (interval) clearInterval(interval);
-        setConnectionStatus("TIMEOUT");
-        toast.error("Timeout ao aguardar QR Code. Tente novamente.");
-      }, maxWaitTime);
-    }
+  const timeout = setTimeout(() => {
+    clearInterval(interval);
+    setConnectionStatus("TIMEOUT");
+    toast.error("Timeout ao aguardar QR Code.");
+  }, 30000); // 30s
 
-    return () => {
-      if (interval) clearInterval(interval);
-      if (timeout) clearTimeout(timeout);
-    };
-  }, [isQrModalOpen, connectionStatus]);
+  return () => {
+    clearInterval(interval);
+    clearTimeout(timeout);
+  };
+}, [isQrModalOpen, sessionId]);
 
   const loadTemplates = async () => {
     try {
