@@ -397,6 +397,7 @@ export default function ConexoesPage() {
   };
 
   const createSession = async (sessionName: string) => {
+    setSessionId(sessionName); // 🔥 GARANTE
     setIsLoading(true);
     try {
       const dbSession = await createOrGetSession(sessionName);
@@ -577,11 +578,13 @@ const checkSessionStatusOnCreate = async (sessionName: string) => {
   };
 
 const handleOpenQrModal = async (sessionName: string) => {
+  setSessionId(sessionName); // 🔥 FALTAVA ISSO
   setIsQrModalOpen(true);
   setQrCodeData(null);
-  setConnectionStatus("CREATING"); // 🔥 importante
+  setConnectionStatus("CREATING");
   await createSession(sessionName);
 };
+
 
   const handleCreateNewConnection = async (sessionName: string) => {
     if (!sessionName.trim()) {
@@ -605,7 +608,7 @@ const handleOpenQrModal = async (sessionName: string) => {
   };
 
   useEffect(() => {
-  if (!isQrModalOpen || !sessionId) return;
+if (!isQrModalOpen) return;
 
   const interval = setInterval(() => {
     checkConnectionStatus();
@@ -621,7 +624,7 @@ const handleOpenQrModal = async (sessionName: string) => {
     clearInterval(interval);
     clearTimeout(timeout);
   };
-}, [isQrModalOpen, sessionId]);
+}, [isQrModalOpen]);
 
   const loadTemplates = async () => {
     try {
